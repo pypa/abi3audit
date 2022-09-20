@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 from typing import Iterator, Optional
 from zipfile import ZipFile
 
-from abi3audit._object import SharedObject, _Dll, _Dylib, _So
+import abi3audit._object as _object
 
 _SHARED_OBJECT_SUFFIXES = [".so", ".dylib", ".pyd"]
 
@@ -54,7 +54,7 @@ class WheelExtractor:
         if not self.path.is_file():
             raise InvalidSpec(f"not a file: {self.path}")
 
-    def __iter__(self) -> Iterator[SharedObject]:
+    def __iter__(self) -> Iterator[_object.SharedObject]:
         with TemporaryDirectory() as td, ZipFile(self.path, "r") as zf:
             exploded_path = Path(td)
             zf.extractall(exploded_path)
@@ -73,14 +73,14 @@ class SharedObjectExtractor:
         if not self.path.is_file():
             raise InvalidSpec(f"not a file: {self.path}")
 
-    def __iter__(self) -> Iterator[SharedObject]:
+    def __iter__(self) -> Iterator[_object.SharedObject]:
         match self.path.suffix:
             case ".so":
-                yield _So(self)
+                yield _object._So(self)
             case ".dylib":
-                yield _Dylib(self)
+                yield _object._Dylib(self)
             case ".pyd":
-                yield _Dll(self)
+                yield _object._Dll(self)
 
 
 Extractor = WheelExtractor | SharedObjectExtractor

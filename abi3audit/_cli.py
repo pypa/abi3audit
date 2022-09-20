@@ -6,8 +6,8 @@ import argparse
 import sys
 
 from rich.console import Console
-from rich.progress import track
 
+from abi3audit._audit import audit
 from abi3audit._extract import InvalidSpec, Spec
 
 
@@ -35,9 +35,9 @@ def main() -> None:
     args = parser.parse_args()
     console = Console(log_path=False)
 
-    with console.status(f"[bold green]Processing {len(args.specs)} inputs") as status:
+    with console.status(f"[bold green]Processing {len(args.specs)} inputs", spinner="clock") as status:
         for spec in args.specs:
-            status.update(f"[bold green]Processing {spec}")
+            status.update(f"[bold green]Auditing {spec}")
             try:
                 extractor = spec.extractor()
             except InvalidSpec as e:
@@ -45,11 +45,11 @@ def main() -> None:
                 sys.exit(1)
 
             for so in extractor:
-                syms = list(so)
-                console.log(f"[bold green] {so}: auditing {len(syms)} symbols")
-                status.stop()
-                for sym in track(syms, description="foo", total=len(syms)):
-                    import time
+                status.update(f"[bold green]Auditing {so}")
 
-                    time.sleep(0.01)
-                status.start()
+                result = audit(so)
+                if result:
+                    console.log(f"[bold green]:ok: {so} looks good!")
+                    console.log(f"[bold green]:ok: {result}")
+                else:
+                    console.log(f"[bold red]:stop_sign: {so}")

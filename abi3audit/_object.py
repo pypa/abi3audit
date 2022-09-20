@@ -4,18 +4,12 @@ Models and logic for handling different types of shared objects.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Iterator
 
 from abi3info.models import Symbol
 from elftools.elf.elffile import ELFFile
 
 import abi3audit._extract as extract
-
-
-@dataclass(frozen=True, eq=True, slots=True)
-class Claims:
-    abi3: bool
 
 
 class _SharedObjectBase:
