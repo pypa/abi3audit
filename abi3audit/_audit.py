@@ -26,6 +26,16 @@ class AuditResult:
         return self.passed
 
 
+@dataclass(frozen=True, eq=True, slots=True)
+class AuditSuccess(AuditResult):
+    passed: bool = True
+
+
+@dataclass(frozen=True, eq=True, slots=True)
+class AuditFailure(AuditResult):
+    passed: bool = False
+
+
 def audit(so: SharedObject) -> AuditResult:
     # TODO: Infer baseline from the shared object's filename + containing
     # wheel filename, if available.
@@ -39,5 +49,7 @@ def audit(so: SharedObject) -> AuditResult:
         if maybe_abi3 is not None:
             if computed is None or maybe_abi3.added > computed:
                 computed = maybe_abi3.added
+        elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
+            return AuditFailure(so, baseline, computed)
 
-    return AuditResult(so, baseline, computed, True)
+    return AuditSuccess(so, baseline, computed)
