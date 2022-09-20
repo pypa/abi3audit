@@ -4,16 +4,23 @@ The `abi3audit` CLI.
 
 import argparse
 import sys
-from pathlib import Path
 
 from rich.console import Console
 
+from abi3audit._extract import InvalidSpec, Spec
 
-def main():
+
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Scans Python wheels for abi3 violations and inconsistencies"
     )
-    parser.add_argument("files", type=Path, metavar="FILE", nargs="+", help="the file(s) to scan")
+    parser.add_argument(
+        "specs",
+        type=Spec,
+        metavar="SPEC",
+        nargs="+",
+        help="the files or other dependency specs to scan",
+    )
     parser.add_argument(
         "-v",
         "--verbose",
@@ -27,18 +34,15 @@ def main():
     args = parser.parse_args()
     console = Console(log_path=False)
 
-    with console.status(f"[bold green]Processing {len(args.files)} inputs") as status:
-        for filename in args.files:
-            status.update(f"[bold green]Processing {filename.name}")
+    with console.status(f"[bold green]Processing {len(args.specs)} inputs") as status:
+        for spec in args.specs:
+            status.update(f"[bold green]Processing {spec}")
+            try:
+                extractor = spec.extractor()
+            except InvalidSpec as e:
+                console.log(f"[bold red]Processing error: {e}")
+                sys.exit(1)
 
-            import time
-            time.sleep(1)
-
-            match filename.suffix:
-                case ".whl":
-                    pass
-                case ".so" | ".pyd" | ".dylib":
-                    pass
-                case _:
-                    console.log(f"[bold red]unrecognized file suffix: '{filename}'")
-                    sys.exit(1)
+            for so in extractor:
+                syms = list(so)
+                console.log(f"[bold green] {so}: auditing {len(syms)} symbols")

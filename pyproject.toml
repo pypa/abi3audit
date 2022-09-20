@@ -22,6 +22,8 @@ classifiers = [
 ]
 dependencies = [
   "abi3info >= 0.0.1",
+  "packaging ~= 21.3",
+  "pyelftools >= 0.29",
   "rich ~= 12.5.1",
 ]
 requires-python = ">=3.10"
