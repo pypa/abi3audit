@@ -6,6 +6,7 @@ import argparse
 import sys
 
 from rich.console import Console
+from rich.progress import track
 
 from abi3audit._extract import InvalidSpec, Spec
 
@@ -46,3 +47,9 @@ def main() -> None:
             for so in extractor:
                 syms = list(so)
                 console.log(f"[bold green] {so}: auditing {len(syms)} symbols")
+                status.stop()
+                for sym in track(syms, description="foo", total=len(syms)):
+                    import time
+
+                    time.sleep(0.01)
+                status.start()
