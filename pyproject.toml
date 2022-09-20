@@ -1,0 +1,88 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "abi3audit"
+dynamic = ["version"]
+description = "Scans Python wheels for abi3 violations and inconsistencies"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+  { name = "William Woodruff", email = "william@yossarian.net" }
+]
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Security",
+]
+dependencies = [
+  "abi3info >= 0.0.1",
+  "rich ~= 12.5.1",
+]
+requires-python = ">=3.10"
+
+[project.urls]
+Homepage = "https://pypi.org/project/abi3audit/"
+Issues = "https://github.com/woodruffw/abi3audit/issues"
+Source = "https://github.com/woodruffw/abi3audit"
+
+[project.optional-dependencies]
+test = [
+  "pytest",
+  "pytest-cov",
+  "pretend",
+  "coverage[toml]",
+]
+lint = [
+  "bandit",
+  "flake8",
+  "black",
+  "isort",
+  "interrogate",
+  "mypy",
+]
+dev = [
+  "build",
+  "pdoc3",
+  "abi3audit[test,lint]",
+]
+
+[project.scripts]
+abi3audit = "abi3audit._cli:main"
+
+[tool.isort]
+multi_line_output = 3
+known_first_party = "abi3audit"
+include_trailing_comma = true
+
+[tool.interrogate]
+exclude = ["env", "test", "codegen"]
+ignore-semiprivate = true
+fail-under = 100
+
+[tool.mypy]
+allow_redefinition = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = true
+show_error_codes = true
+strict_equality = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.bandit]
+exclude_dirs = ["./test"]
+
+[tool.black]
+line-length = 100
