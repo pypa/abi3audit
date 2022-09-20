@@ -35,7 +35,9 @@ def main() -> None:
     args = parser.parse_args()
     console = Console(log_path=False)
 
-    with console.status(f"[bold green]Processing {len(args.specs)} inputs", spinner="clock") as status:
+    with console.status(
+        f"[bold green]Processing {len(args.specs)} inputs", spinner="clock"
+    ) as status:
         for spec in args.specs:
             status.update(f"[bold green]Auditing {spec}")
             try:

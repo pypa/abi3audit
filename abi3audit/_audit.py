@@ -5,7 +5,7 @@ Core auditing logic for shared objects.
 from dataclasses import dataclass
 from typing import Optional
 
-from abi3info import FUNCTIONS, DATAS
+from abi3info import DATAS, FUNCTIONS
 from abi3info.models import PyVersion
 
 from abi3audit._object import SharedObject
