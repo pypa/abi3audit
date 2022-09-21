@@ -6,6 +6,8 @@ abi3audit
 abi3audit scans Python wheels (and unpackaged native extensions) for
 `abi3` violations and inconsistencies.
 
+⚠️ This project is not ready for general-purpose use! ⚠️
+
 ## Installation
 
 abi3audit is available via `pip`:
