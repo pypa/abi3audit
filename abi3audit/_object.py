@@ -12,6 +12,8 @@ from elftools.elf.elffile import ELFFile
 from packaging import utils
 
 import abi3audit._extract as extract
+from abi3audit._vendor import mach_o
+
 
 class SharedObjectError(Exception):
     pass
@@ -80,8 +82,28 @@ class _Dylib(_SharedObjectBase):
     A Mach-O-formatted macOS dynamic library.
     """
 
+    def _each_macho(self) -> Iterator[mach_o.MachO]:
+        # This Mach-O parser doesn't currently support "fat" Mach-Os, where
+        # multiple single-arch Mach-Os are embedded as slices.
+        try:
+            with mach_o.MachO.from_file(self._extractor.path) as macho:
+                yield macho
+        except:
+            _ = self._extractor.path.read_bytes()
+            raise SharedObjectError("unimplemented")
+
     def __iter__(self) -> Iterator[Symbol]:
-        yield from ()
+        for macho in self._each_macho():
+            # with mach_o.MachO.from_file(self._extractor.path) as macho:
+            symtab_cmd = next(
+                (lc for lc in macho.load_commands if lc.type == mach_o.LoadCommandType.symtab), None
+            )
+            if symtab_cmd is None:
+                raise SharedObjectError("shared object has no symbol table")
+
+            for symbol in symtab_cmd.symbols:
+                print(symbol.name)
+                yield from ()
 
 
 class _Dll(_SharedObjectBase):

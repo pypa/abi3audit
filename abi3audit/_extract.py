@@ -13,11 +13,12 @@ from zipfile import ZipFile
 
 import requests
 from packaging import utils
+from packaging.tags import Tag
 
 import abi3audit._object as _object
 
 _DISTRIBUTION_NAME_RE = r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
-_SHARED_OBJECT_SUFFIXES = [".so", ".dylib", ".pyd"]
+_SHARED_OBJECT_SUFFIXES = [".so", ".pyd"]
 
 
 def _glob_all_objects(path: Path) -> Iterator[Path]:
@@ -58,6 +59,10 @@ class WheelExtractor:
         if not self.path.is_file():
             raise InvalidSpec(f"not a file: {self.path}")
 
+    @property
+    def tagset(self) -> frozenset[Tag]:
+        return utils.parse_wheel_filename(self.path.name)[-1]
+
     def __iter__(self) -> Iterator[_object.SharedObject]:
         with TemporaryDirectory() as td, ZipFile(self.path, "r") as zf:
             exploded_path = Path(td)
@@ -80,11 +85,13 @@ class SharedObjectExtractor:
     def __iter__(self) -> Iterator[_object.SharedObject]:
         match self.path.suffix:
             case ".so":
-                # TODO(ww): This is not precise enough, since these can be either
-                # ELFs or Mach-Os.
-                yield _object._So(self)
-            case ".dylib":
-                yield _object._Dylib(self)
+                # Python uses .so for extensions on macOS as well, rather
+                # than the normal .dylib extension. As a result, we have to
+                # suss out the underlying format from the wheel's tags.
+                if self.parent and any("macosx" in t.platform for t in self.parent.tagset):
+                    yield _object._Dylib(self)
+                else:
+                    yield _object._So(self)
             case ".pyd":
                 yield _object._Dll(self)
 
