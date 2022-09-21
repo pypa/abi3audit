@@ -23,6 +23,7 @@ classifiers = [
 dependencies = [
   "abi3info >= 0.0.2",
   "packaging ~= 21.3",
+  "pefile >= 2022.5.30",
   "pyelftools >= 0.29",
   "rich ~= 12.5.1",
 ]
