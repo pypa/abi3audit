@@ -66,9 +66,11 @@ def main() -> None:
 
                 if result.computed > result.baseline:
                     console.log(
-                        f"[bold red]:thumbs_down: {so} is {result.computed}, which is later than {result.baseline}"
+                        f"[bold red]:thumbs_down: {so} is {result.computed}, which is later than "
+                        f"{result.baseline} due to {result.future_abi3_symbols}"
                     )
                 if result.non_abi3_symbols:
                     console.log(
-                        f"[bold red]:thumbs_down: {so} has non-abi3 symbols: {result.non_abi3_sumbols}"
+                        f"[bold red]:thumbs_down: {so} has non-abi3 symbols: "
+                        f"{result.non_abi3_sumbols}"
                     )
