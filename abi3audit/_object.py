@@ -94,6 +94,8 @@ class _Dll(_SharedObjectBase):
             pe.parse_data_directories()
             for import_data in pe.DIRECTORY_ENTRY_IMPORT:
                 for imp in import_data.imports:
+                    # TODO(ww): Root-cause this; imports should always be named
+                    # (in my understanding of import tables in PE).
                     if imp.name is not None:
                         yield Symbol(imp.name.decode())
 
