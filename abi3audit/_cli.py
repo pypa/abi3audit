@@ -3,12 +3,17 @@ The `abi3audit` CLI.
 """
 
 import argparse
+import logging
+import os
 import sys
 
 from rich.console import Console
 
 from abi3audit._audit import audit
 from abi3audit._extract import InvalidSpec, Spec
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper())
 
 
 def main() -> None:
