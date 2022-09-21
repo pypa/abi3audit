@@ -9,7 +9,6 @@ from typing import Iterator, Optional
 import pefile
 from abi3info.models import PyVersion, Symbol
 from elftools.elf.elffile import ELFFile
-from packaging import utils
 
 import abi3audit._extract as extract
 from abi3audit._vendor import mach_o
@@ -31,15 +30,12 @@ class _SharedObjectBase:
         # If we're dealing with a shared object that was extracted from a wheel,
         # we try and suss out the abi3 version from the wheel's own tags.
         if self._extractor.parent is not None:
-            # Wheels can have "compressed tag sets", leaving us to search through
-            # each Tags instance and figure out if it's an abi3 wheel or not.
-            tagset = utils.parse_wheel_filename(self._extractor.parent.path.name)[-1]
-
             # Multiple tagsets can be marked as abi3. Normally this means that they all
             # also share the same CPython version, although I'm not sure if that's actually
             # formally guaranteed.
             # Just to be on the safe side, we collect all of them and select the one with
             # the lowest CPython interpreter version.
+            tagset = self._extractor.parent.tagset
             pyversions = [
                 PyVersion.parse_python_tag(t.interpreter) for t in tagset if t.abi == "abi3"
             ]

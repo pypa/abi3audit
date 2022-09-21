@@ -59,6 +59,8 @@ class WheelExtractor:
         if not self.path.is_file():
             raise InvalidSpec(f"not a file: {self.path}")
 
+    # TODO: Do this during initialization instead, so that we can turn
+    # more things into early errors (like the wheel not being abi3-tagged).
     @property
     def tagset(self) -> frozenset[Tag]:
         return utils.parse_wheel_filename(self.path.name)[-1]
