@@ -10,6 +10,8 @@ from tempfile import TemporaryDirectory
 from typing import Iterator, Optional
 from zipfile import ZipFile
 
+from packaging.requirements import Requirement
+
 import abi3audit._object as _object
 
 _SHARED_OBJECT_SUFFIXES = [".so", ".dylib", ".pyd"]

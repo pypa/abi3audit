@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from abi3info import DATAS, FUNCTIONS
-from abi3info.models import PyVersion
+from abi3info.models import PyVersion, Symbol
 
 from abi3audit._object import SharedObject
 
@@ -16,29 +16,19 @@ class AuditResult:
     so: SharedObject
     baseline: Optional[PyVersion]
     computed: Optional[PyVersion]
-    passed: bool
-
-    @property
-    def can_downgrade_to(self) -> PyVersion:
-        raise ValueError
+    non_abi3_symbols: list[Symbol]
 
     def __bool__(self) -> bool:
-        return self.passed
-
-
-@dataclass(frozen=True, eq=True, slots=True)
-class AuditSuccess(AuditResult):
-    passed: bool = True
-
-
-@dataclass(frozen=True, eq=True, slots=True)
-class AuditFailure(AuditResult):
-    passed: bool = False
+        # Misuse resistance: audit results contain too much information
+        # to be reduced to a single true/false dimension, so prevent
+        # users from assuming that they're truthy when they "succeed."
+        return False
 
 
 def audit(so: SharedObject) -> AuditResult:
     baseline = so.abi3_version()
     computed = None
+    non_abi3_symbols = []
     for sym in so:
         maybe_abi3 = FUNCTIONS.get(sym)
         if maybe_abi3 is None:
@@ -48,11 +38,6 @@ def audit(so: SharedObject) -> AuditResult:
             if computed is None or maybe_abi3.added > computed:
                 computed = maybe_abi3.added
         elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
-            return AuditFailure(so, baseline, computed)
+            non_abi3_symbols.append(sym)
 
-    # Finally, the moment of truth: if the computed ABI is higher than the
-    # baseline ABI, then we know that the shared object's containing wheel
-    # is tagged lower than it should be.
-    if baseline and computed > baseline:
-        return AuditFailure(so, baseline, computed)
-    return AuditSuccess(so, baseline, computed)
+    return AuditResult(so, baseline, computed, non_abi3_symbols)

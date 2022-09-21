@@ -54,4 +54,4 @@ def main() -> None:
                     console.log(f"[bold green]:thumbs_up: {so} looks good!")
                     console.log(f"[bold green]:thumbs_up: {result}")
                 else:
-                    console.log(f"[bold red]:thumbs_down: {so}")
+                    console.log(f"[bold red]:thumbs_down: {result}")
