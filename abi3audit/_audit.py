@@ -53,6 +53,6 @@ def audit(so: SharedObject) -> AuditResult:
     # Finally, the moment of truth: if the computed ABI is higher than the
     # baseline ABI, then we know that the shared object's containing wheel
     # is tagged lower than it should be.
-    if computed > baseline:
+    if baseline and computed > baseline:
         return AuditFailure(so, baseline, computed)
     return AuditSuccess(so, baseline, computed)

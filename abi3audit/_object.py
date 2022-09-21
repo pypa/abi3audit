@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from typing import Iterator, Optional
 
+import pefile
 from abi3info.models import PyVersion, Symbol
 from elftools.elf.elffile import ELFFile
 from packaging import utils
@@ -86,7 +87,11 @@ class _Dll(_SharedObjectBase):
     """
 
     def __iter__(self) -> Iterator[Symbol]:
-        yield from ()
+        with pefile.PE(self._extractor.path) as pe:
+            pe.parse_data_directories()
+            for import_data in pe.DIRECTORY_ENTRY_IMPORT:
+                for imp in import_data.imports:
+                    yield Symbol(imp.name.decode())
 
 
 SharedObject = _So | _Dll | _Dylib
