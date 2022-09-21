@@ -25,6 +25,7 @@ dependencies = [
   "packaging ~= 21.3",
   "pefile >= 2022.5.30",
   "pyelftools >= 0.29",
+  "requests ~= 2.28.1",
   "rich ~= 12.5.1",
 ]
 requires-python = ">=3.10"
