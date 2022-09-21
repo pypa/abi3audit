@@ -56,8 +56,19 @@ def main() -> None:
 
                 try:
                     result = audit(so)
-                    console.log(f"[bold green]:thumbs_up: {so} looks good!")
-                    console.log(f"[bold green]:thumbs_up: {result}")
                 except Exception as exc:
                     # TODO(ww): Refine exceptions and error states here.
                     console.log(f"[bold red]:thumbs_down: {exc}")
+                    continue
+
+                if not result.computed:
+                    raise ValueError(so)
+
+                if result.computed > result.baseline:
+                    console.log(
+                        f"[bold red]:thumbs_down: {so} is {result.computed}, which is later than {result.baseline}"
+                    )
+                if result.non_abi3_symbols:
+                    console.log(
+                        f"[bold red]:thumbs_down: {so} has non-abi3 symbols: {result.non_abi3_sumbols}"
+                    )

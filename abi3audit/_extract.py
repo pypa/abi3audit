@@ -23,7 +23,7 @@ _SHARED_OBJECT_SUFFIXES = [".so", ".pyd"]
 
 def _glob_all_objects(path: Path) -> Iterator[Path]:
     for suffix in _SHARED_OBJECT_SUFFIXES:
-        yield from path.glob(f"**/*{suffix}")
+        yield from path.glob(f"**/*.abi3{suffix}")
 
 
 class InvalidSpec(Exception):
@@ -91,7 +91,8 @@ class SharedObjectExtractor:
                 # than the normal .dylib extension. As a result, we have to
                 # suss out the underlying format from the wheel's tags.
                 if self.parent and any("macosx" in t.platform for t in self.parent.tagset):
-                    yield _object._Dylib(self)
+                    yield from ()
+                    # yield _object._Dylib(self)
                 else:
                     yield _object._So(self)
             case ".pyd":

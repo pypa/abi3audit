@@ -30,17 +30,14 @@ class _SharedObjectBase:
         # If we're dealing with a shared object that was extracted from a wheel,
         # we try and suss out the abi3 version from the wheel's own tags.
         if self._extractor.parent is not None:
-            # Multiple tagsets can be marked as abi3. Normally this means that they all
-            # also share the same CPython version, although I'm not sure if that's actually
-            # formally guaranteed.
-            # Just to be on the safe side, we collect all of them and select the one with
-            # the lowest CPython interpreter version.
+            # Multiple tagsets can be marked as abi3; when this happens,
+            # we select the highest interpreter version.
             tagset = self._extractor.parent.tagset
             pyversions = [
                 PyVersion.parse_python_tag(t.interpreter) for t in tagset if t.abi == "abi3"
             ]
             if len(pyversions) > 0:
-                return min(pyversions)
+                return max(pyversions)
 
         # If we're dealing with a standalone shared object (or the above fell through),
         # we fall back on checking for the ".abi3" marker in the shared object's own
@@ -89,6 +86,10 @@ class _Dylib(_SharedObjectBase):
             raise SharedObjectError("unimplemented")
 
     def __iter__(self) -> Iterator[Symbol]:
+        yield from ()
+        return
+
+        # WIP.
         for macho in self._each_macho():
             # with mach_o.MachO.from_file(self._extractor.path) as macho:
             symtab_cmd = next(
