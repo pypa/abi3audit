@@ -50,4 +50,9 @@ def audit(so: SharedObject) -> AuditResult:
         elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
             return AuditFailure(so, baseline, computed)
 
+    # Finally, the moment of truth: if the computed ABI is higher than the
+    # baseline ABI, then we know that the shared object's containing wheel
+    # is tagged lower than it should be.
+    if computed > baseline:
+        return AuditFailure(so, baseline, computed)
     return AuditSuccess(so, baseline, computed)
