@@ -13,6 +13,9 @@ from packaging import utils
 
 import abi3audit._extract as extract
 
+class SharedObjectError(Exception):
+    pass
+
 
 class _SharedObjectBase:
     """
@@ -67,7 +70,7 @@ class _So(_SharedObjectBase):
         with self._extractor.path.open(mode="rb") as io, ELFFile(io) as elf:
             symtab = elf.get_section_by_name(".symtab")
             if symtab is None:
-                raise ValueError("shared object has no symbol table")
+                raise SharedObjectError("shared object has no symbol table")
             for sym in symtab.iter_symbols():
                 yield Symbol(sym.name)
 
@@ -91,7 +94,8 @@ class _Dll(_SharedObjectBase):
             pe.parse_data_directories()
             for import_data in pe.DIRECTORY_ENTRY_IMPORT:
                 for imp in import_data.imports:
-                    yield Symbol(imp.name.decode())
+                    if imp.name is not None:
+                        yield Symbol(imp.name.decode())
 
 
 SharedObject = _So | _Dll | _Dylib

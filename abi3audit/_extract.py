@@ -4,14 +4,19 @@ Native extension extraction interfaces and implementations.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Iterator, Optional
 from zipfile import ZipFile
 
+import requests
+from packaging import utils
+
 import abi3audit._object as _object
 
+_DISTRIBUTION_NAME_RE = r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
 _SHARED_OBJECT_SUFFIXES = [".so", ".dylib", ".pyd"]
 
 
@@ -39,8 +44,7 @@ class Spec:
         elif any(self.name.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
             return SharedObjectExtractor(self)
         else:
-            # TODO: Support for pulling from PyPI, among other things.
-            raise InvalidSpec(f"invalid or unsupported input specification: {self.name}")
+            return PyPIExtractor(self)
 
     def __str__(self) -> str:
         return self.name
@@ -76,6 +80,8 @@ class SharedObjectExtractor:
     def __iter__(self) -> Iterator[_object.SharedObject]:
         match self.path.suffix:
             case ".so":
+                # TODO(ww): This is not precise enough, since these can be either
+                # ELFs or Mach-Os.
                 yield _object._So(self)
             case ".dylib":
                 yield _object._Dylib(self)
@@ -83,4 +89,40 @@ class SharedObjectExtractor:
                 yield _object._Dll(self)
 
 
-Extractor = WheelExtractor | SharedObjectExtractor
+class PyPIExtractor:
+    def __init__(self, spec: Spec) -> None:
+        self.spec = spec
+
+        if not re.match(_DISTRIBUTION_NAME_RE, str(spec), re.IGNORECASE):
+            raise InvalidSpec(f"'{self.spec}' does not look like a package distribution")
+
+    def __iter__(self) -> Iterator[_object.SharedObject]:
+        resp = requests.get(
+            f"https://pypi.org/pypi/{self.spec}/json", headers={"Accept-Encoding": "gzip"}
+        )
+        body = resp.json()
+
+        for dists in body["releases"].values():
+            for dist in dists:
+                # If it's not a wheel, we can't audit it.
+                if not dist["filename"].endswith(".whl"):
+                    continue
+
+                # If it's not an abi3 wheel, we don't have anything interesting
+                # to say about it.
+                # TODO: Maybe include non-abi3 wheels so that we can detect
+                # wheels that can be safely marked as abi3?
+                tagset = utils.parse_wheel_filename(dist["filename"])[-1]
+                if not any(t.abi == "abi3" for t in tagset):
+                    continue
+
+                resp = requests.get(dist["url"])
+                with TemporaryDirectory() as td:
+                    wheel_path = Path(td) / dist["filename"]
+                    wheel_path.write_bytes(resp.content)
+
+                    child = WheelExtractor(Spec(str(wheel_path)))
+                    yield from child
+
+
+Extractor = WheelExtractor | SharedObjectExtractor | PyPIExtractor

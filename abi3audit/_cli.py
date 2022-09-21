@@ -49,9 +49,10 @@ def main() -> None:
             for so in extractor:
                 status.update(f"[bold green]Auditing {so}")
 
-                result = audit(so)
-                if result:
+                try:
+                    result = audit(so)
                     console.log(f"[bold green]:thumbs_up: {so} looks good!")
                     console.log(f"[bold green]:thumbs_up: {result}")
-                else:
-                    console.log(f"[bold red]:thumbs_down: {result}")
+                except Exception as exc:
+                    # TODO(ww): Refine exceptions and error states here.
+                    console.log(f"[bold red]:thumbs_down: {exc}")
