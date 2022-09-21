@@ -37,9 +37,7 @@ class AuditFailure(AuditResult):
 
 
 def audit(so: SharedObject) -> AuditResult:
-    # TODO: Infer baseline from the shared object's filename + containing
-    # wheel filename, if available.
-    baseline = None
+    baseline = so.abi3_version()
     computed = None
     for sym in so:
         maybe_abi3 = FUNCTIONS.get(sym)
