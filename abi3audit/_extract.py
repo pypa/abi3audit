@@ -5,10 +5,9 @@ Native extension extraction interfaces and implementations.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator, Optional
+from typing import Iterator, NewType, Optional
 from zipfile import ZipFile
 
 import requests
@@ -35,26 +34,22 @@ class InvalidSpec(Exception):
     pass
 
 
-@dataclass(frozen=True, eq=True, slots=True)
-class Spec:
-    name: str
+Spec = NewType("Spec", str)
 
-    def extractor(self) -> Extractor:
-        if self.name.endswith(".whl"):
-            return WheelExtractor(self)
-        elif any(self.name.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
-            return SharedObjectExtractor(self)
-        else:
-            return PyPIExtractor(self)
 
-    def __str__(self) -> str:
-        return self.name
+def extractor(spec: Spec) -> Extractor:
+    if spec.endswith(".whl"):
+        return WheelExtractor(spec)
+    elif any(spec.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
+        return SharedObjectExtractor(spec)
+    else:
+        return PyPIExtractor(spec)
 
 
 class WheelExtractor:
     def __init__(self, spec: Spec) -> None:
         self.spec = spec
-        self.path = Path(self.spec.name)
+        self.path = Path(self.spec)
 
         if not self.path.is_file():
             raise InvalidSpec(f"not a file: {self.path}")
@@ -78,7 +73,7 @@ class WheelExtractor:
 class SharedObjectExtractor:
     def __init__(self, spec: Spec, parent: Optional[WheelExtractor] = None) -> None:
         self.spec = spec
-        self.path = Path(self.spec.name)
+        self.path = Path(self.spec)
         self.parent = parent
 
         if not self.path.is_file():

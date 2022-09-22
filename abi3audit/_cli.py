@@ -69,7 +69,7 @@ def main() -> None:
                 elif result.non_abi3_symbols:
                     console.log(
                         f"[bold red]:thumbs_down: {so} has non-abi3 symbols: "
-                        f"{result.non_abi3_sumbols}"
+                        f"{result.non_abi3_symbols}"
                     )
                 else:
                     console.log(f"[bold green]:thumbs_up: {so} looks good!")

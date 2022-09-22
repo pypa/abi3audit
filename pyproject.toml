@@ -50,6 +50,7 @@ lint = [
   "isort",
   "interrogate",
   "mypy",
+  "types-requests",
 ]
 dev = [
   "build",
@@ -75,6 +76,7 @@ allow_redefinition = true
 check_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_defs = true
+exclude = ["_vendor/"]
 ignore_missing_imports = true
 no_implicit_optional = true
 show_error_codes = true
