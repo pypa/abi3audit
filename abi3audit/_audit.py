@@ -16,8 +16,8 @@ class AuditResult:
     so: SharedObject
     baseline: Optional[PyVersion]
     computed: Optional[PyVersion]
-    non_abi3_symbols: list[Symbol]
-    future_abi3_symbols: list[Symbol]
+    non_abi3_symbols: set[Symbol]
+    future_abi3_symbols: set[Symbol]
 
     def __bool__(self) -> bool:
         # Misuse resistance: audit results contain too much information
@@ -40,8 +40,8 @@ def audit(so: SharedObject) -> AuditResult:
             if computed is None or maybe_abi3.added > computed:
                 computed = maybe_abi3.added
             if maybe_abi3.added > baseline:
-                future_abi3_symbols.append(sym)
+                future_abi3_symbols.add(sym)
         elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
-            non_abi3_symbols.append(sym)
+            non_abi3_symbols.add(sym)
 
     return AuditResult(so, baseline, computed, non_abi3_symbols, future_abi3_symbols)
