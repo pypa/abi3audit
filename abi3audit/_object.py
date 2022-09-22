@@ -4,6 +4,7 @@ Models and logic for handling different types of shared objects.
 
 from __future__ import annotations
 
+import struct
 from typing import Iterator, Optional
 
 import pefile
@@ -82,25 +83,61 @@ class _Dylib(_SharedObjectBase):
             with mach_o.MachO.from_file(self._extractor.path) as macho:
                 yield macho
         except:
-            _ = self._extractor.path.read_bytes()
-            raise SharedObjectError("unimplemented")
+            # To handle "fat" Mach-Os, we do some ad-hoc parsing below:
+            # * Check that we're really in a fat Mach-O and, if
+            #   we are, figure out whether it's a 32-bit or 64-bit style one;
+            # * Figure out how many architecture slices (nfat_arch) there are;
+            # * Loop over each, grabbing the inner Mach-O's file offset and size;
+            # * Passing the raw data at that offset to the "thin" Mach-O parser
+            macho_slices = []
+            with self._extractor.path.open("rb") as io:
+                (magic,) = struct.unpack(">I", io.read(4))
+                if magic == 0xCAFEBABE:
+                    fieldspec = (">I", 4)
+                elif magic == 0xCAFEBABF:
+                    fieldspec = (">Q", 8)
+                else:
+                    # NOTE: There are technically two other magics for little-endian
+                    # Mach-O Fat headers, but they never appear in the wild.
+                    raise SharedObjectError("bad magic (not FAT_MAGIC or FAT_MAGIC_64)")
+
+                (nfat_arch,) = struct.unpack(fieldspec[0], io.read(fieldspec[1]))
+                for _ in range(nfat_arch):
+                    # Move past cputype and cpusubtype (both uint32)
+                    _ = io.read(8)
+                    (mach_offset,) = struct.unpack(fieldspec[0], io.read(fieldspec[1]))
+                    (mach_size,) = struct.unpack(fieldspec[0], io.read(fieldspec[1]))
+                    macho_slices.append((mach_offset, mach_size))
+                    # Move past align (uint32) and, if it's 64-bit, reserved (uint32) as well
+                    _ = io.read(4)
+                    if fieldspec[1] == 8:
+                        _ = io.read(4)
+
+                # Finally, parse each Mach-O.
+                for (offset, size) in macho_slices:
+                    io.seek(offset)
+                    raw_macho = io.read(size)
+
+                    with mach_o.MachO.from_bytes(raw_macho) as macho:
+                        yield macho
 
     def __iter__(self) -> Iterator[Symbol]:
-        yield from ()
-        return
-
-        # WIP.
         for macho in self._each_macho():
             # with mach_o.MachO.from_file(self._extractor.path) as macho:
             symtab_cmd = next(
-                (lc for lc in macho.load_commands if lc.type == mach_o.LoadCommandType.symtab), None
+                (
+                    lc.body
+                    for lc in macho.load_commands
+                    if lc.type == mach_o.MachO.LoadCommandType.symtab
+                ),
+                None,
             )
             if symtab_cmd is None:
                 raise SharedObjectError("shared object has no symbol table")
 
             for symbol in symtab_cmd.symbols:
-                print(symbol.name)
-                yield from ()
+                # All symbols on macOS are prefixed with _; remove it.
+                yield Symbol(symbol.name[1:])
 
 
 class _Dll(_SharedObjectBase):

@@ -52,7 +52,7 @@ def main() -> None:
                 sys.exit(1)
 
             for so in extractor:
-                status.update(f"[bold green]Auditing {so}")
+                status.update(f"[bold green]{spec}: auditing {so}")
 
                 try:
                     result = audit(so)

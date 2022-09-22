@@ -91,8 +91,7 @@ class SharedObjectExtractor:
                 # than the normal .dylib extension. As a result, we have to
                 # suss out the underlying format from the wheel's tags.
                 if self.parent and any("macosx" in t.platform for t in self.parent.tagset):
-                    yield from ()
-                    # yield _object._Dylib(self)
+                    yield _object._Dylib(self)
                 else:
                     yield _object._So(self)
             case ".pyd":
