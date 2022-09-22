@@ -10,7 +10,7 @@ import sys
 from rich.console import Console
 
 from abi3audit._audit import audit
-from abi3audit._extract import InvalidSpec, Spec
+from abi3audit._extract import InvalidSpec, Spec, extractor
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper())
@@ -46,12 +46,12 @@ def main() -> None:
         for spec in args.specs:
             status.update(f"[bold green]Auditing {spec}")
             try:
-                extractor = spec.extractor()
+                ex = extractor(spec)
             except InvalidSpec as e:
                 console.log(f"[bold red]Processing error: {e}")
                 sys.exit(1)
 
-            for so in extractor:
+            for so in ex:
                 status.update(f"[bold green]{spec}: auditing {so}")
 
                 try:
