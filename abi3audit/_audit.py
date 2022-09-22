@@ -29,8 +29,8 @@ class AuditResult:
 def audit(so: SharedObject) -> AuditResult:
     baseline = so.abi3_version()
     computed = None
-    non_abi3_symbols = []
-    future_abi3_symbols = []
+    non_abi3_symbols = set()
+    future_abi3_symbols = set()
     for sym in so:
         maybe_abi3 = FUNCTIONS.get(sym)
         if maybe_abi3 is None:

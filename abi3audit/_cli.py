@@ -61,16 +61,15 @@ def main() -> None:
                     console.log(f"[bold red]:thumbs_down: {exc}")
                     continue
 
-                if not result.computed:
-                    raise ValueError(so)
-
                 if result.computed > result.baseline:
                     console.log(
                         f"[bold red]:thumbs_down: {so} is {result.computed}, which is later than "
                         f"{result.baseline} due to {result.future_abi3_symbols}"
                     )
-                if result.non_abi3_symbols:
+                elif result.non_abi3_symbols:
                     console.log(
                         f"[bold red]:thumbs_down: {so} has non-abi3 symbols: "
                         f"{result.non_abi3_sumbols}"
                     )
+                else:
+                    console.log(f"[bold green]:thumbs_up: {so} looks good!")

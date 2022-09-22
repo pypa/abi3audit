@@ -65,10 +65,16 @@ class _So(_SharedObjectBase):
     def __iter__(self) -> Iterator[Symbol]:
         with self._extractor.path.open(mode="rb") as io, ELFFile(io) as elf:
             symtab = elf.get_section_by_name(".symtab")
-            if symtab is None:
-                raise SharedObjectError("shared object has no symbol table")
-            for sym in symtab.iter_symbols():
-                yield Symbol(sym.name)
+            if symtab is not None:
+                for sym in symtab.iter_symbols():
+                    yield Symbol(sym.name)
+
+            # NOTE: Experimentally, some versions of pyO3 create
+            # extensions with the symbols in .dynsym instead of .symtab.
+            dynsym = elf.get_section_by_name(".dynsym")
+            if dynsym is not None:
+                for sym in dynsym.iter_symbols():
+                    yield Symbol(sym.name)
 
 
 class _Dylib(_SharedObjectBase):
@@ -82,7 +88,7 @@ class _Dylib(_SharedObjectBase):
         try:
             with mach_o.MachO.from_file(self._extractor.path) as macho:
                 yield macho
-        except:
+        except Exception:
             # To handle "fat" Mach-Os, we do some ad-hoc parsing below:
             # * Check that we're really in a fat Mach-O and, if
             #   we are, figure out whether it's a 32-bit or 64-bit style one;
