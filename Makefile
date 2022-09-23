@@ -22,7 +22,9 @@ ifneq ($(TESTS),)
 	COV_ARGS :=
 else
 	TEST_ARGS :=
-	COV_ARGS := --fail-under 100
+	COV_ARGS :=
+	# TODO: Enable.
+	# COV_ARGS := --fail-under 100
 endif
 
 .PHONY: all
@@ -44,8 +46,9 @@ lint: env/pyvenv.cfg
 		black --check $(ALL_PY_SRCS) && \
 		isort --check $(ALL_PY_SRCS) && \
 		flake8 $(ALL_PY_SRCS) && \
-		mypy $(PY_MODULE) && \
-		interrogate -c pyproject.toml .
+		mypy $(PY_MODULE)
+		# TODO: Enable.
+		# interrogate -c pyproject.toml .
 
 .PHONY: reformat
 reformat:
