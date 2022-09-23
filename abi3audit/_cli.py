@@ -83,13 +83,19 @@ def main() -> None:
             if not results:
                 console.log(f"[yellow]:person_shrugging: nothing auditable found in {spec}")
             else:
+                # TODO: Ugly. There has to be a better way to do this.
                 if bad_abi3_version_count:
                     bad_abi3_version_count = f"[red]{bad_abi3_version_count}[/red]"
+                else:
+                    bad_abi3_version_count = f"[green]{bad_abi3_version_count}[/green]"
+
                 if abi3_violation_count:
                     abi3_violation_count = f"[red]{abi3_violation_count}[/red]"
+                else:
+                    abi3_violation_count = f"[green]{abi3_violation_count}[/green]"
 
                 console.log(
-                    f"[green]:information_desk_person: {spec}: {len(results)} extensions scanned, "
+                    f":information_desk_person: {spec}: {len(results)} extensions scanned, "
                     f"{bad_abi3_version_count} abi3 version errors, "
                     f"{abi3_violation_count} abi3 violations"
                 )

@@ -4,6 +4,7 @@ Native extension extraction interfaces and implementations.
 
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -17,13 +18,18 @@ from packaging.tags import Tag
 import abi3audit._object as _object
 from abi3audit._state import status
 
+logger = logging.getLogger(__name__)
+
 _DISTRIBUTION_NAME_RE = r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
 _SHARED_OBJECT_SUFFIXES = [".so", ".pyd"]
 
 
 def _glob_all_objects(path: Path) -> Iterator[Path]:
+    # NOTE: abi3 extensions are normally tagged with .abi3.SUFFIX,
+    # e.g. _foo.abi3.so. Experimentally however, not all are, so we
+    # don't filter on the presence of that additional tag.
     for suffix in _SHARED_OBJECT_SUFFIXES:
-        yield from path.glob(f"**/*.abi3{suffix}")
+        yield from path.glob(f"**/*{suffix}")
 
 
 class InvalidSpec(Exception):
@@ -132,6 +138,7 @@ class PyPIExtractor:
                 # wheels that can be safely marked as abi3?
                 tagset = utils.parse_wheel_filename(dist["filename"])[-1]
                 if not any(t.abi == "abi3" for t in tagset):
+                    logger.debug(f"skipping non-abi3 wheel: {dist['filename']}")
                     continue
 
                 status.update(f"{self}: {dist['filename']}: retrieving wheel")
