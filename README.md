@@ -2,6 +2,8 @@ abi3audit
 ========
 
 [![CI](https://github.com/woodruffw/abi3audit/actions/workflows/ci.yml/badge.svg)](https://github.com/woodruffw/abi3audit/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/abi3audit.svg)](https://pypi.org/project/abi3audit)
+[![Packaging status](https://repology.org/badge/tiny-repos/python:abi3audit.svg)](https://repology.org/project/python:abi3audit/versions)
 
 abi3audit scans Python wheels (and unpackaged native extensions) for
 `abi3` violations and inconsistencies.
