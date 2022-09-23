@@ -9,7 +9,7 @@ description = "Scans Python wheels for abi3 violations and inconsistencies"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-  { name = "William Woodruff", email = "william@yossarian.net" }
+  { name = "William Woodruff", email = "william@trailofbits.com" }
 ]
 classifiers = [
   "License :: OSI Approved :: Apache Software License",
