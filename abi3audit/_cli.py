@@ -37,13 +37,18 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    if args.verbose:
+        logging.root.setLevel("DEBUG")
+
+    logger.debug(f"parsed arguments: {args}")
+
     with status:
         for spec in args.specs:
             status.update(f"auditing {spec}")
             try:
                 extractor_ = extractor(spec)
             except InvalidSpec as e:
-                console.log(f"[bold red]processing error: {e}")
+                console.log(f"[bold red]:thumbs_down: processing error: {e}")
                 sys.exit(1)
 
             for so in extractor_:
