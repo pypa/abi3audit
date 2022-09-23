@@ -54,10 +54,12 @@ class _SharedObjectBase:
         return None
 
     def __str__(self) -> str:
-        if self._extractor.parent is None:
-            return self._extractor.path.name
-        else:
-            return f"{self._extractor.path.name} ({self._extractor.parent.path.name})"
+        parents = []
+        current = self._extractor.parent
+        while current is not None:
+            parents.append(str(current))
+            current = current.parent  # type: ignore[assignment]
+        return f"{': '.join(reversed(parents))}: {self._extractor}"
 
 
 class _So(_SharedObjectBase):

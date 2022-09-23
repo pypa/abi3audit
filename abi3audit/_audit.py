@@ -40,7 +40,7 @@ def audit(so: SharedObject) -> AuditResult:
     non_abi3_symbols = set()
     future_abi3_symbols = set()
 
-    status.update(f"analyzing symbols in {so}")
+    status.update(f"{so}: analyzing symbols")
     try:
         for sym in so:
             maybe_abi3 = FUNCTIONS.get(sym)

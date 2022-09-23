@@ -48,9 +48,10 @@ def extractor(spec: Spec) -> Extractor:
 
 
 class WheelExtractor:
-    def __init__(self, spec: Spec) -> None:
+    def __init__(self, spec: Spec, parent: Optional[PyPIExtractor] = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
+        self.parent = parent
 
         if not self.path.is_file():
             raise InvalidSpec(f"not a file: {self.path}")
@@ -62,7 +63,7 @@ class WheelExtractor:
         return utils.parse_wheel_filename(self.path.name)[-1]
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
-        status.update(f"collecting shared objects in {self.spec}")
+        status.update(f"{self}: collecting shared objects")
         with TemporaryDirectory() as td, ZipFile(self.path, "r") as zf:
             exploded_path = Path(td)
             zf.extractall(exploded_path)
@@ -70,6 +71,9 @@ class WheelExtractor:
             for so_path in _glob_all_objects(exploded_path):
                 child = SharedObjectExtractor(Spec(str(so_path)), parent=self)
                 yield from child
+
+    def __str__(self) -> str:
+        return self.path.name
 
 
 class SharedObjectExtractor:
@@ -94,16 +98,20 @@ class SharedObjectExtractor:
             case ".pyd":
                 yield _object._Dll(self)
 
+    def __str__(self) -> str:
+        return self.path.name
+
 
 class PyPIExtractor:
     def __init__(self, spec: Spec) -> None:
         self.spec = spec
+        self.parent = None
 
         if not re.match(_DISTRIBUTION_NAME_RE, str(spec), re.IGNORECASE):
             raise InvalidSpec(f"'{self.spec}' does not look like a package distribution")
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
-        status.update(f"querying PyPI for {self.spec}")
+        status.update(f"{self}: querying PyPI")
 
         # TODO: Error handling for this request.
         resp = requests.get(
@@ -111,7 +119,7 @@ class PyPIExtractor:
         )
         body = resp.json()
 
-        status.update(f"collecting distributions from PyPI for {self.spec}")
+        status.update(f"{self}: collecting distributions from PyPI")
         for dists in body["releases"].values():
             for dist in dists:
                 # If it's not a wheel, we can't audit it.
@@ -126,14 +134,17 @@ class PyPIExtractor:
                 if not any(t.abi == "abi3" for t in tagset):
                     continue
 
-                status.update(f"retrieving wheel: {dist['filename']}")
+                status.update(f"{self}: {dist['filename']}: retrieving wheel")
                 resp = requests.get(dist["url"])
                 with TemporaryDirectory() as td:
                     wheel_path = Path(td) / dist["filename"]
                     wheel_path.write_bytes(resp.content)
 
-                    child = WheelExtractor(Spec(str(wheel_path)))
+                    child = WheelExtractor(Spec(str(wheel_path)), parent=self)
                     yield from child
+
+    def __str__(self) -> str:
+        return self.spec
 
 
 Extractor = WheelExtractor | SharedObjectExtractor | PyPIExtractor
