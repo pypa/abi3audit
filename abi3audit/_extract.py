@@ -15,6 +15,7 @@ from packaging import utils
 from packaging.tags import Tag
 
 import abi3audit._object as _object
+from abi3audit._state import status
 
 _DISTRIBUTION_NAME_RE = r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
 _SHARED_OBJECT_SUFFIXES = [".so", ".pyd"]
@@ -61,6 +62,7 @@ class WheelExtractor:
         return utils.parse_wheel_filename(self.path.name)[-1]
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
+        status.update(f"collecting shared objects in {self.spec}")
         with TemporaryDirectory() as td, ZipFile(self.path, "r") as zf:
             exploded_path = Path(td)
             zf.extractall(exploded_path)
@@ -101,11 +103,13 @@ class PyPIExtractor:
             raise InvalidSpec(f"'{self.spec}' does not look like a package distribution")
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
+        status.update(f"querying PyPI for {self.spec}")
         resp = requests.get(
             f"https://pypi.org/pypi/{self.spec}/json", headers={"Accept-Encoding": "gzip"}
         )
         body = resp.json()
 
+        status.update(f"collecting distributions from PyPI for {self.spec}")
         for dists in body["releases"].values():
             for dist in dists:
                 # If it's not a wheel, we can't audit it.
@@ -120,6 +124,7 @@ class PyPIExtractor:
                 if not any(t.abi == "abi3" for t in tagset):
                     continue
 
+                status.update(f"retrieving wheel: {dist['filename']}")
                 resp = requests.get(dist["url"])
                 with TemporaryDirectory() as td:
                     wheel_path = Path(td) / dist["filename"]

@@ -8,6 +8,11 @@ from abi3info import DATAS, FUNCTIONS
 from abi3info.models import PyVersion, Symbol
 
 from abi3audit._object import SharedObject
+from abi3audit._state import status
+
+
+class AuditError(Exception):
+    pass
 
 
 @dataclass(frozen=True, eq=True, slots=True)
@@ -34,17 +39,22 @@ def audit(so: SharedObject) -> AuditResult:
     computed = baseline
     non_abi3_symbols = set()
     future_abi3_symbols = set()
-    for sym in so:
-        maybe_abi3 = FUNCTIONS.get(sym)
-        if maybe_abi3 is None:
-            maybe_abi3 = DATAS.get(sym)
 
-        if maybe_abi3 is not None:
-            if maybe_abi3.added > computed:
-                computed = maybe_abi3.added
-            if maybe_abi3.added > baseline:
-                future_abi3_symbols.add(sym)
-        elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
-            non_abi3_symbols.add(sym)
+    status.update(f"analyzing symbols in {so}")
+    try:
+        for sym in so:
+            maybe_abi3 = FUNCTIONS.get(sym)
+            if maybe_abi3 is None:
+                maybe_abi3 = DATAS.get(sym)
+
+            if maybe_abi3 is not None:
+                if maybe_abi3.added > computed:
+                    computed = maybe_abi3.added
+                if maybe_abi3.added > baseline:
+                    future_abi3_symbols.add(sym)
+            elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
+                non_abi3_symbols.add(sym)
+    except Exception as exc:
+        raise AuditError(f"failed to collect symbols in shared object: {exc}")
 
     return AuditResult(so, baseline, computed, non_abi3_symbols, future_abi3_symbols)

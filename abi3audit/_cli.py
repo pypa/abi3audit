@@ -39,15 +39,15 @@ def main() -> None:
 
     with status:
         for spec in args.specs:
-            status.update(f"[bold green]Auditing {spec}")
+            status.update(f"auditing {spec}")
             try:
-                ex = extractor(spec)
+                extractor_ = extractor(spec)
             except InvalidSpec as e:
-                console.log(f"[bold red]Processing error: {e}")
+                console.log(f"[bold red]processing error: {e}")
                 sys.exit(1)
 
-            for so in ex:
-                status.update(f"[bold green]{spec}: auditing {so}")
+            for so in extractor_:
+                status.update(f"{spec}: auditing {so}")
 
                 try:
                     result = audit(so)
@@ -66,5 +66,5 @@ def main() -> None:
                         f"[bold red]:thumbs_down: {so} has non-abi3 symbols: "
                         f"{result.non_abi3_symbols}"
                     )
-                else:
-                    console.log(f"[bold green]:thumbs_up: {so} looks good!")
+                # else:
+                #     console.log(f":thumbs_up: {so} looks good!")
