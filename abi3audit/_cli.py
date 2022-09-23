@@ -7,10 +7,9 @@ import logging
 import os
 import sys
 
-from rich.console import Console
-
 from abi3audit._audit import audit
 from abi3audit._extract import InvalidSpec, Spec, extractor
+from abi3audit._state import console, status
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper())
@@ -36,13 +35,9 @@ def main() -> None:
             "is equivalent to setting it to `debug`"
         ),
     )
-
     args = parser.parse_args()
-    console = Console(log_path=False)
 
-    with console.status(
-        f"[bold green]Processing {len(args.specs)} inputs", spinner="clock"
-    ) as status:
+    with status:
         for spec in args.specs:
             status.update(f"[bold green]Auditing {spec}")
             try:
