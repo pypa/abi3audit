@@ -71,5 +71,3 @@ def main() -> None:
                         f"[bold red]:thumbs_down: {so} has non-abi3 symbols: "
                         f"{result.non_abi3_symbols}"
                     )
-                # else:
-                #     console.log(f":thumbs_up: {so} looks good!")
