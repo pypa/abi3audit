@@ -104,6 +104,8 @@ class PyPIExtractor:
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
         status.update(f"querying PyPI for {self.spec}")
+
+        # TODO: Error handling for this request.
         resp = requests.get(
             f"https://pypi.org/pypi/{self.spec}/json", headers={"Accept-Encoding": "gzip"}
         )
