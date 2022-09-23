@@ -93,3 +93,6 @@ exclude_dirs = ["./test"]
 
 [tool.black]
 line-length = 100
+
+[tool.coverage.run]
+omit = ["abi3audit/_vendor/*"]
