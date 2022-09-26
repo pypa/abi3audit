@@ -66,7 +66,7 @@ def make_spec(val: str) -> Spec:
         # NOTE: We allow untagged shared objects when they're indirectly
         # audited (e.g. via an abi3 wheel), but not directly (since
         # without a tag here we don't know if it's abi3 at all).
-        if not ".abi3." in val:
+        if ".abi3." not in val:
             raise InvalidSpec(f"'{val}' looks like a shared object but is not tagged as abi3")
         return SharedObjectSpec(val)
     elif re.match(_DISTRIBUTION_NAME_RE, val, re.IGNORECASE):

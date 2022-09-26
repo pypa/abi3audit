@@ -29,6 +29,7 @@ class _SharedObjectBase:
 
     def __init__(self, extractor: extract.SharedObjectExtractor):
         self._extractor = extractor
+        self.path = self._extractor.path
 
     def abi3_version(self) -> Optional[PyVersion]:
         # If we're dealing with a shared object that was extracted from a wheel,

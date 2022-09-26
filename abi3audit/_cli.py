@@ -3,6 +3,7 @@ The `abi3audit` CLI.
 """
 
 import argparse
+import json
 import logging
 import os
 import sys
@@ -13,10 +14,10 @@ from rich.logging import RichHandler
 
 from abi3audit._audit import AuditResult, audit
 from abi3audit._extract import (
+    Extractor,
     InvalidSpec,
     PyPISpec,
     SharedObjectSpec,
-    Spec,
     WheelSpec,
     make_spec,
 )
@@ -53,14 +54,13 @@ def _colornum(n: int) -> str:
 
 class SpecResults:
     def __init__(self) -> None:
-        self._results: DefaultDict[Spec, DefaultDict[SharedObject, Any]] = defaultdict(
-            lambda: defaultdict(dict)
-        )
+        # Map of extractor -> shared object -> audit result
+        self._results: DefaultDict[Extractor, list[AuditResult]] = defaultdict(list)
         self._bad_abi3_version_counts: DefaultDict[SharedObject, int] = defaultdict(int)
         self._abi3_violation_counts: DefaultDict[SharedObject, int] = defaultdict(int)
 
-    def add(self, spec: Spec, so: SharedObject, result: AuditResult) -> None:
-        self._results[spec][so] = result
+    def add(self, extractor: Extractor, so: SharedObject, result: AuditResult) -> None:
+        self._results[extractor].append(result)
 
         if result.computed > result.baseline:
             self._bad_abi3_version_counts[so] += 1
@@ -70,34 +70,47 @@ class SpecResults:
     def summarize_all(self) -> str:
         pass
 
-    def summarize_spec(self, spec: Spec) -> str:
-        spec_results = self._results[spec]
+    def summarize_extraction(self, extractor: Extractor) -> str:
+        spec_results = self._results[extractor]
 
         if not spec_results:
-            return _yellow(f":person_shrugging: nothing auditable found in {spec}")
+            return _yellow(f":person_shrugging: nothing auditable found in {extractor.spec}")
 
-        abi3_version_counts = sum(
-            self._bad_abi3_version_counts[so] for so in self._results[spec].keys()
-        )
-        abi3_violations = sum(self._abi3_violation_counts[so] for so in self._results[spec].keys())
+        abi3_version_counts = sum(self._bad_abi3_version_counts[res.so] for res in spec_results)
+        abi3_violations = sum(self._abi3_violation_counts[res.so] for res in spec_results)
         return (
-            f":information_desk_person: {spec}: {len(spec_results)} extensions scanned; "
+            f":information_desk_person: {extractor}: {len(spec_results)} extensions scanned; "
             f"{_colornum(abi3_version_counts)} ABI version mismatches and "
             f"{_colornum(abi3_violations)} ABI violations found"
         )
 
     def json(self) -> dict[str, Any]:
+        def _one_package(results):
+            sos_by_wheel = defaultdict(list)
+            for result in results:
+                sos_by_wheel[result.so._extractor.parent.path.name].append(
+                    {
+                        "name": result.so.path.name,
+                        "result": result.json(),
+                    }
+                )
+            return sos_by_wheel
+            # return [str(so._extractor.parent.path) for so in so_result_map.keys()]
+
+        def _one_extractor(extractor: Extractor, results):
+            match extractor.spec:
+                case WheelSpec(_):
+                    body = {"kind": "wheel"}
+                case SharedObjectSpec(_):
+                    body = {"kind": "object"}
+                case PyPISpec(_):
+                    body = {"kind": "package", "package": _one_package(results)}
+            return body
+
         summary: dict[str, Any] = {}
         specs = summary["specs"] = {}
-        for spec, so_results in self._results.items():
-            match spec:
-                case WheelSpec(_):
-                    kind = "wheel"
-                case SharedObjectSpec(_):
-                    kind = "object"
-                case PyPISpec(_):
-                    kind = "package"
-            specs[str(spec)] = {"kind": kind}
+        for extractor, results in self._results.items():
+            specs[extractor.spec] = _one_extractor(extractor, results)
 
         return summary
 
@@ -146,15 +159,15 @@ def main() -> None:
 
     results = SpecResults()
     with status:
-        for spec in args.specs:
+        for spec in set(args.specs):
             status.update(f"auditing {spec}")
             try:
-                extractor_ = spec._extractor()
+                extractor = spec._extractor()
             except InvalidSpec as e:
                 console.log(f"[red]:thumbs_down: processing error: {e}")
                 sys.exit(1)
 
-            for so in extractor_:
+            for so in extractor:
                 status.update(f"{spec}: auditing {so}")
 
                 try:
@@ -164,11 +177,11 @@ def main() -> None:
                     console.log(f"[red]:thumbs_down: auditing error: {exc}")
                     sys.exit(1)
 
-                results.add(spec, so, result)
+                results.add(extractor, so, result)
                 if not result and args.verbose:
                     console.log(result)
 
-            console.log(results.summarize_spec(spec))
+            console.log(results.summarize_extraction(extractor))
 
     if args.report:
-        print(results.json(), file=args.output)
+        print(json.dumps(results.json()), file=args.output)
