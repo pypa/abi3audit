@@ -8,7 +8,7 @@ import logging
 import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator, NewType, Optional
+from typing import Iterator, Optional
 from zipfile import ZipFile
 
 import requests
@@ -32,7 +32,7 @@ def _glob_all_objects(path: Path) -> Iterator[Path]:
         yield from path.glob(f"**/*{suffix}")
 
 
-class InvalidSpec(Exception):
+class InvalidSpec(ValueError):
     """
     Raised when abi3audit doesn't know how to convert a user's auditing
     specification into something that can be extracted.
@@ -41,26 +41,52 @@ class InvalidSpec(Exception):
     pass
 
 
-Spec = NewType("Spec", str)
+class WheelSpec(str):
+    def _extractor(self) -> Extractor:
+        return WheelExtractor(self)
 
 
-def extractor(spec: Spec) -> Extractor:
-    if spec.endswith(".whl"):
-        return WheelExtractor(spec)
-    elif any(spec.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
-        return SharedObjectExtractor(spec)
+class SharedObjectSpec(str):
+    def _extractor(self) -> Extractor:
+        return SharedObjectExtractor(self)
+
+
+class PyPISpec(str):
+    def _extractor(self) -> Extractor:
+        return PyPIExtractor(self)
+
+
+Spec = WheelSpec | SharedObjectSpec | PyPISpec
+
+
+def make_spec(val: str) -> Spec:
+    if val.endswith(".whl"):
+        return WheelSpec(val)
+    elif any(val.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
+        return SharedObjectSpec(val)
+    elif re.match(_DISTRIBUTION_NAME_RE, val, re.IGNORECASE):
+        return PyPISpec(val)
     else:
-        return PyPIExtractor(spec)
+        raise InvalidSpec(f"'{val}' does not look like a valid spec")
+
+
+class ExtractorError(ValueError):
+    """
+    Raised when abi3audit doesn't know how to (or can't) extract shared objects
+    from the requested source.
+    """
+
+    pass
 
 
 class WheelExtractor:
-    def __init__(self, spec: Spec, parent: Optional[PyPIExtractor] = None) -> None:
+    def __init__(self, spec: WheelSpec, parent: Optional[PyPIExtractor] = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
         self.parent = parent
 
         if not self.path.is_file():
-            raise InvalidSpec(f"not a file: {self.path}")
+            raise ExtractorError(f"not a file: {self.path}")
 
     # TODO: Do this during initialization instead, so that we can turn
     # more things into early errors (like the wheel not being abi3-tagged).
@@ -75,7 +101,7 @@ class WheelExtractor:
             zf.extractall(exploded_path)
 
             for so_path in _glob_all_objects(exploded_path):
-                child = SharedObjectExtractor(Spec(str(so_path)), parent=self)
+                child = SharedObjectExtractor(SharedObjectSpec(so_path), parent=self)
                 yield from child
 
     def __str__(self) -> str:
@@ -83,21 +109,31 @@ class WheelExtractor:
 
 
 class SharedObjectExtractor:
-    def __init__(self, spec: Spec, parent: Optional[WheelExtractor] = None) -> None:
+    def __init__(self, spec: SharedObjectSpec, parent: Optional[WheelExtractor] = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
         self.parent = parent
 
         if not self.path.is_file():
-            raise InvalidSpec(f"not a file: {self.path}")
+            raise ExtractorError(f"not a file: {self.path}")
+
+    def _elf_magic(self) -> bool:
+        with self.path.open("rb") as io:
+            magic = io.read(4)
+            return magic == b"\x7FELF"
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
         match self.path.suffix:
             case ".so":
                 # Python uses .so for extensions on macOS as well, rather
                 # than the normal .dylib extension. As a result, we have to
-                # suss out the underlying format from the wheel's tags.
-                if self.parent and any("macosx" in t.platform for t in self.parent.tagset):
+                # suss out the underlying format from the wheel's tags,
+                # or from the magic bytes as a last result.
+                if (
+                    self.parent
+                    and any("macosx" in t.platform for t in self.parent.tagset)
+                    or not self._elf_magic()
+                ):
                     yield _object._Dylib(self)
                 else:
                     yield _object._So(self)
@@ -109,12 +145,9 @@ class SharedObjectExtractor:
 
 
 class PyPIExtractor:
-    def __init__(self, spec: Spec) -> None:
+    def __init__(self, spec: PyPISpec) -> None:
         self.spec = spec
         self.parent = None
-
-        if not re.match(_DISTRIBUTION_NAME_RE, str(spec), re.IGNORECASE):
-            raise InvalidSpec(f"'{self.spec}' does not look like a package distribution")
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
         status.update(f"{self}: querying PyPI")
@@ -147,7 +180,7 @@ class PyPIExtractor:
                     wheel_path = Path(td) / dist["filename"]
                     wheel_path.write_bytes(resp.content)
 
-                    child = WheelExtractor(Spec(str(wheel_path)), parent=self)
+                    child = WheelExtractor(WheelSpec(wheel_path), parent=self)
                     yield from child
 
     def __str__(self) -> str:

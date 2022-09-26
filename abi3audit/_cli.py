@@ -7,15 +7,99 @@ import logging
 import os
 import sys
 from collections import defaultdict
-from typing import DefaultDict
+from typing import Any, DefaultDict
+
+from rich.logging import RichHandler
 
 from abi3audit._audit import AuditResult, audit
-from abi3audit._extract import InvalidSpec, Spec, extractor
+from abi3audit._extract import (
+    InvalidSpec,
+    PyPISpec,
+    SharedObjectSpec,
+    Spec,
+    WheelSpec,
+    make_spec,
+)
 from abi3audit._object import SharedObject
 from abi3audit._state import console, status
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper())
+logging.basicConfig(
+    level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper(),
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler()],
+)
+
+
+# TODO: Put these helpers somewhere else.
+def _green(s: str) -> str:
+    return f"[green]{s}[/green]"
+
+
+def _yellow(s: str) -> str:
+    return f"[yellow]{s}[/yellow]"
+
+
+def _red(s: str) -> str:
+    return f"[red]{s}[/red]"
+
+
+def _colornum(n: int) -> str:
+    if n == 0:
+        return _green(str(n))
+    return _red(str(n))
+
+
+class SpecResults:
+    def __init__(self) -> None:
+        self._results: DefaultDict[Spec, DefaultDict[SharedObject, Any]] = defaultdict(
+            lambda: defaultdict(dict)
+        )
+        self._bad_abi3_version_counts: DefaultDict[SharedObject, int] = defaultdict(int)
+        self._abi3_violation_counts: DefaultDict[SharedObject, int] = defaultdict(int)
+
+    def add(self, spec: Spec, so: SharedObject, result: AuditResult) -> None:
+        self._results[spec][so] = result
+
+        if result.computed > result.baseline:
+            self._bad_abi3_version_counts[so] += 1
+
+        self._abi3_violation_counts[so] += len(result.non_abi3_symbols)
+
+    def summarize_all(self) -> str:
+        pass
+
+    def summarize_spec(self, spec: Spec) -> str:
+        spec_results = self._results[spec]
+
+        if not spec_results:
+            return _yellow(f":person_shrugging: nothing auditable found in {spec}")
+
+        abi3_version_counts = sum(
+            self._bad_abi3_version_counts[so] for so in self._results[spec].keys()
+        )
+        abi3_violations = sum(self._abi3_violation_counts[so] for so in self._results[spec].keys())
+        return (
+            f":information_desk_person: {spec}: {len(spec_results)} extensions scanned; "
+            f"{_colornum(abi3_version_counts)} ABI version mismatches and "
+            f"{_colornum(abi3_violations)} ABI violations found"
+        )
+
+    def json(self) -> dict[str, Any]:
+        summary: dict[str, Any] = {}
+        specs = summary["specs"] = {}
+        for spec, so_results in self._results.items():
+            match spec:
+                case WheelSpec(_):
+                    kind = "wheel"
+                case SharedObjectSpec(_):
+                    kind = "object"
+                case PyPISpec(_):
+                    kind = "package"
+            specs[str(spec)] = {"kind": kind}
+
+        return summary
 
 
 def main() -> None:
@@ -24,42 +108,52 @@ def main() -> None:
     )
     parser.add_argument(
         "specs",
-        type=Spec,
+        type=make_spec,
         metavar="SPEC",
         nargs="+",
         help="the files or other dependency specs to scan",
     )
     parser.add_argument(
-        "-v",
-        "--verbose",
+        "--debug",
         action="store_true",
         help=(
-            "give more output; this setting overrides `ABI3AUDIT_LOGLEVEL` and "
+            "emit debug statements; this setting also overrides `ABI3AUDIT_LOGLEVEL` and "
             "is equivalent to setting it to `debug`"
         ),
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help=("give more output, including pretty-printed results for each audit step"),
+    )
+    parser.add_argument(
+        "-R", "--report", action="store_true", help="generate a JSON report; uses --output"
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        help="the path to write the JSON report to (default: stdout)",
+    )
     args = parser.parse_args()
 
-    if args.verbose:
+    if args.debug:
         logging.root.setLevel("DEBUG")
 
     logger.debug(f"parsed arguments: {args}")
 
-    results_by_spec: DefaultDict[
-        Spec, list[DefaultDict[SharedObject, list[AuditResult]]]
-    ] = defaultdict(list)
+    results = SpecResults()
     with status:
         for spec in args.specs:
             status.update(f"auditing {spec}")
             try:
-                extractor_ = extractor(spec)
+                extractor_ = spec._extractor()
             except InvalidSpec as e:
                 console.log(f"[red]:thumbs_down: processing error: {e}")
                 sys.exit(1)
 
-            results = defaultdict(list)
-            bad_abi3_version_count = 0
-            abi3_violation_count = 0
             for so in extractor_:
                 status.update(f"{spec}: auditing {so}")
 
@@ -67,35 +161,14 @@ def main() -> None:
                     result = audit(so)
                 except Exception as exc:
                     # TODO(ww): Refine exceptions and error states here.
-                    console.log(f"[red]:thumbs_down: {exc}")
-                    continue
+                    console.log(f"[red]:thumbs_down: auditing error: {exc}")
+                    sys.exit(1)
 
-                if not result:
+                results.add(spec, so, result)
+                if not result and args.verbose:
                     console.log(result)
 
-                if result.computed > result.baseline:
-                    bad_abi3_version_count += 1
-                elif result.non_abi3_symbols:
-                    abi3_violation_count += 1
-                results[so].append(result)
+            console.log(results.summarize_spec(spec))
 
-            if not results:
-                console.log(f"[yellow]:person_shrugging: nothing auditable found in {spec}")
-            else:
-                # TODO: Ugly. There has to be a better way to do this.
-                if bad_abi3_version_count:
-                    bad_abi3_version_fmt = f"[red]{bad_abi3_version_count}[/red]"
-                else:
-                    bad_abi3_version_fmt = f"[green]{bad_abi3_version_count}[/green]"
-
-                if abi3_violation_count:
-                    abi3_violation_fmt = f"[red]{abi3_violation_count}[/red]"
-                else:
-                    abi3_violation_fmt = f"[green]{abi3_violation_count}[/green]"
-
-                console.log(
-                    f":information_desk_person: {spec}: {len(results)} extensions scanned, "
-                    f"{bad_abi3_version_fmt} abi3 version errors, "
-                    f"{abi3_violation_fmt} abi3 violations"
-                )
-                results_by_spec[spec].append(results)
+    if args.report:
+        print(results.json(), file=args.output)
