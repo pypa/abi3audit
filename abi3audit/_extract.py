@@ -63,6 +63,11 @@ def make_spec(val: str) -> Spec:
     if val.endswith(".whl"):
         return WheelSpec(val)
     elif any(val.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
+        # NOTE: We allow untagged shared objects when they're indirectly
+        # audited (e.g. via an abi3 wheel), but not directly (since
+        # without a tag here we don't know if it's abi3 at all).
+        if not ".abi3." in val:
+            raise InvalidSpec(f"'{val}' looks like a shared object but is not tagged as abi3")
         return SharedObjectSpec(val)
     elif re.match(_DISTRIBUTION_NAME_RE, val, re.IGNORECASE):
         return PyPISpec(val)
