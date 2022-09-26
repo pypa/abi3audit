@@ -1,9 +1,9 @@
 import pytest
 
-from abi3audit._extract import InvalidSpec, Spec, WheelExtractor
+from abi3audit._extract import ExtractorError, WheelExtractor, WheelSpec
 
 
 class TestWheelExtractor:
     def test_init(self):
-        with pytest.raises(InvalidSpec):
-            WheelExtractor(Spec("not-a-real-file"))
+        with pytest.raises(ExtractorError):
+            WheelExtractor(WheelSpec("not-a-real-file"))
