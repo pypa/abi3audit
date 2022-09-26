@@ -6,9 +6,12 @@ import argparse
 import logging
 import os
 import sys
+from collections import defaultdict
+from typing import DefaultDict
 
-from abi3audit._audit import audit
+from abi3audit._audit import AuditResult, audit
 from abi3audit._extract import InvalidSpec, Spec, extractor
+from abi3audit._object import SharedObject
 from abi3audit._state import console, status
 
 logger = logging.getLogger(__name__)
@@ -37,34 +40,62 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    if args.verbose:
+        logging.root.setLevel("DEBUG")
+
+    logger.debug(f"parsed arguments: {args}")
+
+    results_by_spec: DefaultDict[
+        Spec, list[DefaultDict[SharedObject, list[AuditResult]]]
+    ] = defaultdict(list)
     with status:
         for spec in args.specs:
-            status.update(f"[bold green]Auditing {spec}")
+            status.update(f"auditing {spec}")
             try:
-                ex = extractor(spec)
+                extractor_ = extractor(spec)
             except InvalidSpec as e:
-                console.log(f"[bold red]Processing error: {e}")
+                console.log(f"[red]:thumbs_down: processing error: {e}")
                 sys.exit(1)
 
-            for so in ex:
-                status.update(f"[bold green]{spec}: auditing {so}")
+            results = defaultdict(list)
+            bad_abi3_version_count = 0
+            abi3_violation_count = 0
+            for so in extractor_:
+                status.update(f"{spec}: auditing {so}")
 
                 try:
                     result = audit(so)
                 except Exception as exc:
                     # TODO(ww): Refine exceptions and error states here.
-                    console.log(f"[bold red]:thumbs_down: {exc}")
+                    console.log(f"[red]:thumbs_down: {exc}")
                     continue
 
+                if not result:
+                    console.log(result)
+
                 if result.computed > result.baseline:
-                    console.log(
-                        f"[bold red]:thumbs_down: {so} is {result.computed}, which is later than "
-                        f"{result.baseline} due to {result.future_abi3_symbols}"
-                    )
+                    bad_abi3_version_count += 1
                 elif result.non_abi3_symbols:
-                    console.log(
-                        f"[bold red]:thumbs_down: {so} has non-abi3 symbols: "
-                        f"{result.non_abi3_symbols}"
-                    )
+                    abi3_violation_count += 1
+                results[so].append(result)
+
+            if not results:
+                console.log(f"[yellow]:person_shrugging: nothing auditable found in {spec}")
+            else:
+                # TODO: Ugly. There has to be a better way to do this.
+                if bad_abi3_version_count:
+                    bad_abi3_version_fmt = f"[red]{bad_abi3_version_count}[/red]"
                 else:
-                    console.log(f"[bold green]:thumbs_up: {so} looks good!")
+                    bad_abi3_version_fmt = f"[green]{bad_abi3_version_count}[/green]"
+
+                if abi3_violation_count:
+                    abi3_violation_fmt = f"[red]{abi3_violation_count}[/red]"
+                else:
+                    abi3_violation_fmt = f"[green]{abi3_violation_count}[/green]"
+
+                console.log(
+                    f":information_desk_person: {spec}: {len(results)} extensions scanned, "
+                    f"{bad_abi3_version_fmt} abi3 version errors, "
+                    f"{abi3_violation_fmt} abi3 violations"
+                )
+                results_by_spec[spec].append(results)

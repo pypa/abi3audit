@@ -5,4 +5,4 @@
 from rich.console import Console
 
 console = Console(log_path=False)
-status = console.status("[bold green]Processing inputs", spinner="clock")
+status = console.status("[green]Processing inputs", spinner="clock")

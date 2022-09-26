@@ -4,6 +4,7 @@ Models and logic for handling different types of shared objects.
 
 from __future__ import annotations
 
+import logging
 import struct
 from typing import Iterator, Optional
 
@@ -13,6 +14,8 @@ from elftools.elf.elffile import ELFFile
 
 import abi3audit._extract as extract
 from abi3audit._vendor import mach_o
+
+logger = logging.getLogger(__name__)
 
 
 class SharedObjectError(Exception):
@@ -51,10 +54,12 @@ class _SharedObjectBase:
         return None
 
     def __str__(self) -> str:
-        if self._extractor.parent is None:
-            return self._extractor.path.name
-        else:
-            return f"{self._extractor.path.name} ({self._extractor.parent.path.name})"
+        parents = []
+        current = self._extractor.parent
+        while current is not None:
+            parents.append(str(current))
+            current = current.parent  # type: ignore[assignment]
+        return f"{': '.join(reversed(parents))}: {self._extractor}"
 
 
 class _So(_SharedObjectBase):
@@ -88,7 +93,10 @@ class _Dylib(_SharedObjectBase):
         try:
             with mach_o.MachO.from_file(self._extractor.path) as macho:
                 yield macho
-        except Exception:
+        except Exception as exc:
+            logger.debug(
+                f"mach-o decode for {self._extractor.path} raised {exc}; trying as a fat mach-o"
+            )
             # To handle "fat" Mach-Os, we do some ad-hoc parsing below:
             # * Check that we're really in a fat Mach-O and, if
             #   we are, figure out whether it's a 32-bit or 64-bit style one;
@@ -120,6 +128,7 @@ class _Dylib(_SharedObjectBase):
                         _ = io.read(4)
 
                 # Finally, parse each Mach-O.
+                logger.debug(f"fat macho: identified {nfat_arch} mach-o slices: {macho_slices}")
                 for (offset, size) in macho_slices:
                     io.seek(offset)
                     raw_macho = io.read(size)
@@ -158,8 +167,10 @@ class _Dll(_SharedObjectBase):
                 for imp in import_data.imports:
                     # TODO(ww): Root-cause this; imports should always be named
                     # (in my understanding of import tables in PE).
-                    if imp.name is not None:
-                        yield Symbol(imp.name.decode())
+                    if imp.name is None:
+                        logger.debug(f"weird: skipping import data entry without name: {imp}")
+                        continue
+                    yield Symbol(imp.name.decode())
 
 
 SharedObject = _So | _Dll | _Dylib
