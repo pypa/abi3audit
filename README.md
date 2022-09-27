@@ -37,7 +37,7 @@ Top-level:
 ```
 usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] SPEC [SPEC ...]
 
-Scans Python wheels for abi3 violations and inconsistencies
+Scans Python extensions for abi3 violations and inconsistencies
 
 positional arguments:
   SPEC                  the files or other dependency specs to scan
