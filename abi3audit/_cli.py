@@ -85,19 +85,21 @@ class SpecResults:
         )
 
     def json(self) -> dict[str, Any]:
-        def _one_package(results):
+        def _one_package(results: list[AuditResult]) -> dict[str, Any]:
             sos_by_wheel = defaultdict(list)
             for result in results:
-                sos_by_wheel[result.so._extractor.parent.path.name].append(
+                # NOTE: mypy can't see that this is never None in this context.
+                wheel_name = result.so._extractor.parent.path.name  # type: ignore[union-attr]
+                sos_by_wheel[wheel_name].append(
                     {
                         "name": result.so.path.name,
                         "result": result.json(),
                     }
                 )
             return sos_by_wheel
-            # return [str(so._extractor.parent.path) for so in so_result_map.keys()]
 
-        def _one_extractor(extractor: Extractor, results):
+        def _one_extractor(extractor: Extractor, results: list[AuditResult]) -> dict[str, Any]:
+            body: dict[str, Any]
             match extractor.spec:
                 case WheelSpec(_):
                     body = {"kind": "wheel"}
