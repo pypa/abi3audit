@@ -8,6 +8,8 @@ from typing import Literal, Optional
 
 from rich.console import Console
 
+# TODO: Remove this once rich's NO_COLOR handling is fixed.
+# See: https://github.com/Textualize/rich/issues/2549
 _color_system: Optional[Literal["auto"]]
 if os.getenv("NO_COLOR", None) is not None:
     _color_system = None
