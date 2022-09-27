@@ -29,7 +29,7 @@ logging.basicConfig(
     level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper(),
     format="%(message)s",
     datefmt="[%X]",
-    handlers=[RichHandler()],
+    handlers=[RichHandler(console=console)],
 )
 
 
@@ -85,6 +85,27 @@ class SpecResults:
         )
 
     def json(self) -> dict[str, Any]:
+        """
+        Returns a JSON-serializable dictionary representation of this `SpecResults`.
+        """
+
+        # TODO(ww): These inner helpers could definitely be consolidated.
+        def _one_object(results: list[AuditResult]) -> dict[str, Any]:
+            # NOTE: Anything else indicates a logic error.
+            assert len(results) == 1
+            return {"name": results[0].so.path.name, "result": results[0].json()}
+
+        def _one_wheel(results: list[AuditResult]) -> list[dict[str, Any]]:
+            sos = []
+            for result in results:
+                sos.append(
+                    {
+                        "name": result.so.path.name,
+                        "result": result.json(),
+                    }
+                )
+            return sos
+
         def _one_package(results: list[AuditResult]) -> dict[str, Any]:
             sos_by_wheel = defaultdict(list)
             for result in results:
@@ -102,9 +123,9 @@ class SpecResults:
             body: dict[str, Any]
             match extractor.spec:
                 case WheelSpec(_):
-                    body = {"kind": "wheel"}
+                    body = {"kind": "wheel", "wheel": _one_wheel(results)}
                 case SharedObjectSpec(_):
-                    body = {"kind": "object"}
+                    body = {"kind": "object", "object": _one_object(results)}
                 case PyPISpec(_):
                     body = {"kind": "package", "package": _one_package(results)}
             return body
