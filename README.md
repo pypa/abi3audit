@@ -53,7 +53,7 @@ options:
   -o OUTPUT, --output OUTPUT
                         the path to write the JSON report to (default: stdout)
 ```
-<!-- @end-abi3audit-help -->
+<!-- @end-abi3audit-help@ -->
 
 ### Examples
 
