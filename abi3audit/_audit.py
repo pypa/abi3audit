@@ -3,6 +3,7 @@ Core auditing logic for shared objects.
 """
 
 from dataclasses import dataclass
+from typing import Any
 
 from abi3info import DATAS, FUNCTIONS
 from abi3info.models import Data, Function, PyVersion, Symbol
@@ -32,6 +33,18 @@ class AuditResult:
         # TODO(ww): Why does PyVersion.__le__ not typecheck as bool?
         return bool(self.baseline >= self.computed)
 
+    def json(self) -> dict[str, Any]:
+        return {
+            "is_abi3": self.is_abi3(),
+            "is_abi3_baseline_compatible": self.is_abi3_baseline_compatible(),
+            "baseline": str(self.baseline),
+            "computed": str(self.computed),
+            "non_abi3_symbols": [sym.name for sym in self.non_abi3_symbols],
+            "future_abi3_objects": {
+                obj.symbol.name: str(obj.added) for obj in self.future_abi3_objects
+            },
+        }
+
     def __bool__(self) -> bool:
         return self.is_abi3() and self.is_abi3_baseline_compatible()
 
@@ -49,9 +62,9 @@ class AuditResult:
             yield table
         elif self.computed > self.baseline:
             yield (
-                f"[yellow]:thumbs_down: [green]{self.so}[/green] uses the ABI of Python "
-                f"[blue]{self.computed}[/blue], but is tagged for the ABI of Python "
-                f"[red]{self.baseline}[/red]"
+                f"[yellow]:thumbs_down: [green]{self.so}[/green] uses the Python "
+                f"[blue]{self.computed}[/blue] ABI, but is tagged for the Python "
+                f"[red]{self.baseline}[/red] ABI"
             )
 
             table = Table()

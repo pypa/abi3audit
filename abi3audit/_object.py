@@ -29,6 +29,7 @@ class _SharedObjectBase:
 
     def __init__(self, extractor: extract.SharedObjectExtractor):
         self._extractor = extractor
+        self.path = self._extractor.path
 
     def abi3_version(self) -> Optional[PyVersion]:
         # If we're dealing with a shared object that was extracted from a wheel,
@@ -48,6 +49,7 @@ class _SharedObjectBase:
         # filename. This doesn't tell us anything about the specific abi3 version, so
         # we assume the lowest.
         if ".abi3" in self._extractor.path.suffixes:
+            logger.warning("no wheel to infer abi3 version from; assuming the lowest (3.2)")
             return PyVersion(3, 2)
 
         # With no wheel tags and no filename tag, we have nothing to go on.
@@ -93,10 +95,8 @@ class _Dylib(_SharedObjectBase):
         try:
             with mach_o.MachO.from_file(self._extractor.path) as macho:
                 yield macho
-        except Exception as exc:
-            logger.debug(
-                f"mach-o decode for {self._extractor.path} raised {exc}; trying as a fat mach-o"
-            )
+        except Exception:
+            logger.debug(f"mach-o decode for {self._extractor.path} failed; trying as a fat mach-o")
             # To handle "fat" Mach-Os, we do some ad-hoc parsing below:
             # * Check that we're really in a fat Mach-O and, if
             #   we are, figure out whether it's a 32-bit or 64-bit style one;
