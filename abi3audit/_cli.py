@@ -140,7 +140,8 @@ class SpecResults:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Scans Python wheels for abi3 violations and inconsistencies"
+        prog="abi3audit",
+        description="Scans Python extensions for abi3 violations and inconsistencies",
     )
     parser.add_argument(
         "specs",
