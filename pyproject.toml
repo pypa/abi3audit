@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
   "abi3info >= 0.0.5",
+  "CacheControl[filecache]>=0.12.10",
   "kaitaistruct ~= 0.10",
   "packaging ~= 21.3",
   "pefile >= 2022.5.30",

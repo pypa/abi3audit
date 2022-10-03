@@ -11,11 +11,11 @@ from tempfile import TemporaryDirectory
 from typing import Iterator, Optional
 from zipfile import ZipFile
 
-import requests
 from packaging import utils
 from packaging.tags import Tag
 
 import abi3audit._object as _object
+from abi3audit._cache import caching_session
 from abi3audit._state import status
 
 logger = logging.getLogger(__name__)
@@ -204,12 +204,13 @@ class PyPIExtractor:
     def __init__(self, spec: PyPISpec) -> None:
         self.spec = spec
         self.parent = None
+        self._session = caching_session()
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
         status.update(f"{self}: querying PyPI")
 
         # TODO: Error handling for this request.
-        resp = requests.get(
+        resp = self._session.get(
             f"https://pypi.org/pypi/{self.spec}/json", headers={"Accept-Encoding": "gzip"}
         )
         body = resp.json()
@@ -231,7 +232,7 @@ class PyPIExtractor:
                     continue
 
                 status.update(f"{self}: {dist['filename']}: retrieving wheel")
-                resp = requests.get(dist["url"])
+                resp = self._session.get(dist["url"])
                 with TemporaryDirectory() as td:
                     wheel_path = Path(td) / dist["filename"]
                     wheel_path.write_bytes(resp.content)
