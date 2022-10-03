@@ -42,17 +42,45 @@ class InvalidSpec(ValueError):
 
 
 class WheelSpec(str):
+    """
+    Represents a Python wheel, presumed to be present on disk.
+
+    A wheel can contain multiple Python extensions, as shared objects.
+    """
+
     def _extractor(self) -> Extractor:
+        """
+        Returns an extractor for this wheel's shared objects.
+        """
         return WheelExtractor(self)
 
 
 class SharedObjectSpec(str):
+    """
+    Represents a single shared object, presumed to be present on disk.
+
+    A shared object may or may not be a Python extension.
+    """
+
     def _extractor(self) -> Extractor:
+        """
+        Returns a "trivial" extractor for this shared object.
+        """
         return SharedObjectExtractor(self)
 
 
 class PyPISpec(str):
+    """
+    Represents a package on PyPI.
+
+    A package may have zero or more published wheels, of which zero or more
+    may be tagged as abi3 compatible.
+    """
+
     def _extractor(self) -> Extractor:
+        """
+        Returns an extractor for each shared object in each published abi3 wheel.
+        """
         return PyPIExtractor(self)
 
 
@@ -60,6 +88,9 @@ Spec = WheelSpec | SharedObjectSpec | PyPISpec
 
 
 def make_spec(val: str) -> Spec:
+    """
+    Constructs a (minimally) valid `Spec` instance from the given input.
+    """
     if val.endswith(".whl"):
         return WheelSpec(val)
     elif any(val.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
@@ -85,6 +116,12 @@ class ExtractorError(ValueError):
 
 
 class WheelExtractor:
+    """
+    An extractor for Python wheels.
+
+    This extractor collects and yields each shared object in the specified wheel.
+    """
+
     def __init__(self, spec: WheelSpec, parent: Optional[PyPIExtractor] = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
@@ -114,6 +151,13 @@ class WheelExtractor:
 
 
 class SharedObjectExtractor:
+    """
+    An extractor for shared objects.
+
+    This extractor is "trivial", since it yields a shared object corresponding to
+    the spec it created with.
+    """
+
     def __init__(self, spec: SharedObjectSpec, parent: Optional[WheelExtractor] = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
@@ -150,6 +194,13 @@ class SharedObjectExtractor:
 
 
 class PyPIExtractor:
+    """
+    An extractor for packages published on PyPI.
+
+    This extractor yields each shared object in each abi3-tagged wheel present
+    on PyPI.
+    """
+
     def __init__(self, spec: PyPISpec) -> None:
         self.spec = spec
         self.parent = None
