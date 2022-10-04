@@ -7,7 +7,7 @@ abi3audit
 [![Packaging status](https://repology.org/badge/tiny-repos/python:abi3audit.svg)](https://repology.org/project/python:abi3audit/versions)
 <!--- @end-badges@ --->
 
-abi3audit scans Python extensions for `abi3` violations and inconsistencies.
+`abi3audit` scans Python extensions for `abi3` violations and inconsistencies.
 
 It can scan individual (unpackaged) shared objects, packaged wheels, or entire
 package version histories.
@@ -16,7 +16,7 @@ package version histories.
 
 ## Installation
 
-abi3audit is available via `pip`:
+`abi3audit` is available via `pip`:
 
 ```bash
 pip install abi3audit
@@ -139,11 +139,40 @@ yields:
 }
 ```
 
+## Limitations
+
+`abi3audit` is a *best-effort* tool, with some of the same limitations as
+[`auditwheel`](https://github.com/pypa/auditwheel). In particular:
+
+* `abi3audit` cannot check for *dynamic* abi3 violations, such as an extension
+  that calls [`dlsym(3)`](https://man7.org/linux/man-pages/man3/dlsym.3.html)
+  to invoke a non-abi3 function at runtime.
+
+* `abi3audit` can confirm the presence of abi3-compatible symbols, but does
+  not have an exhaustive list of abi3-*incompatible* symbols. Instead, it looks
+  for violations by looking for symbols that start with `Py_` or `_Py_` that
+  are not in the abi3 compatibility list. This is *unlikely* to result in false
+  positives, but *could* if an extension incorrectly uses those reserved
+  prefixes.
+
+* When auditing a "bare" shared object (e.g. `foo.abi3.so`), `abi3audit` cannot
+  assume anything about the minimum *intended* abi3 version. Instead, it
+  defaults to the lowest known abi3 version (`abi3-cp32`) and warns on any
+  version mismatches (e.g., a symbol that was only stabilized in 3.6).
+  This can result in false positives, so users are encouraged to audit entire
+  wheels or packages instead (since they contain the sufficient metadata).
+
+* `abi3audit` considers the abi3 version when a symbol was *stabilized*,
+  not *introduced*. In other words: `abi3audit` will produce a warning
+  when an `abi3-cp36` extension contains a function stabilized in 3.7, even
+  if that function was introduced in 3.6. This is *not* a false positive
+  (it is an ABI version mismatch), but it's *generally* not a source of bugs.
+
 ## Licensing
 
-abi3audit is licensed under the MIT license.
+`abi3audit` is licensed under the MIT license.
 
-abi3audit includes ASN.1 and Mach-O parsers generated from
+`abi3audit` includes ASN.1 and Mach-O parsers generated from
 definitions provided by the [Kaitai Struct](https://kaitai.io/) project.
 These vendored parsers are licensed by the Kaitai Struct authors under the MIT
 license.
