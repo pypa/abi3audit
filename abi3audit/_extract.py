@@ -16,7 +16,7 @@ from packaging.tags import Tag
 
 import abi3audit._object as _object
 from abi3audit._cache import caching_session
-from abi3audit._state import status
+from abi3audit._state import console, status
 
 logger = logging.getLogger(__name__)
 
@@ -213,10 +213,22 @@ class PyPIExtractor:
         resp = self._session.get(
             f"https://pypi.org/pypi/{self.spec}/json", headers={"Accept-Encoding": "gzip"}
         )
+
+        if not resp.ok:
+            console.log(f"[red]:skull: {self}: PyPI returned {resp.status_code}")
+            yield from ()
+            return
+
         body = resp.json()
 
         status.update(f"{self}: collecting distributions from PyPI")
-        for dists in body["releases"].values():
+        releases = body.get("releases")
+        if not releases:
+            console.log(f"[red]:confused: {self}: no releases on PyPI")
+            yield from ()
+            return
+
+        for dists in releases.values():
             for dist in dists:
                 # If it's not a wheel, we can't audit it.
                 if not dist["filename"].endswith(".whl"):
@@ -226,7 +238,22 @@ class PyPIExtractor:
                 # to say about it.
                 # TODO: Maybe include non-abi3 wheels so that we can detect
                 # wheels that can be safely marked as abi3?
-                tagset = utils.parse_wheel_filename(dist["filename"])[-1]
+                #
+                # NOTE: Unfortunately, there are some wheels on PyPI that don't
+                # have valid (PEP427) filenames, like:
+                #
+                #   pyffmpeg-2.0.5-cp35.cp36.cp37.cp38.cp39-macosx_10_14_x86_64.whl
+                #
+                # ...which is missing an ABI tag.
+                #
+                # There's not much we can do about these other than fail in
+                # a controlled fashion and warn the user.
+                try:
+                    tagset = utils.parse_wheel_filename(dist["filename"])[-1]
+                except utils.InvalidWheelFilename as exc:
+                    console.log(f"[red]:skull: {self}: {exc}")
+                    continue
+
                 if not any(t.abi == "abi3" for t in tagset):
                     logger.debug(f"skipping non-abi3 wheel: {dist['filename']}")
                     continue
