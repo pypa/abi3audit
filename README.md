@@ -14,6 +14,46 @@ package version histories.
 
 ⚠️ This project is not ready for general-purpose use! ⚠️
 
+## Why?
+
+CPython (the reference implementation of Python) defines a stable API and corresponding
+ABI ("`abi3`"). In principle, any CPython extension can be built against this
+API/ABI and will remain forward compatible with future minor versions of CPython.
+In other words: if you build against the stable ABI for Python 3.5, your
+extension should work without modification on Python 3.9.
+
+The stable ABI simplifies packaging of CPython extensions, since the packager
+only needs to build one `abi3` wheel that targets the minimum supported Python
+version.
+
+To signal that a Python wheel contains `abi3`-compatible extensions,
+the Python packaging ecosystem uses the `abi3` wheel tag, e.g.:
+
+```
+pyrage-1.0.1-cp37-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.whl
+```
+
+Unfortunately, there is **no actual enforcement** of `abi3` compliance
+in Python extensions at install or runtime: a wheel (or independent
+shared object) that is tagged as `abi3` is assumed to be `abi3`, but
+is not validated in any way.
+
+To make matters worse, there is **no formal connection** between the flag
+([`--py-limited-api`](https://setuptools.pypa.io/en/latest/userguide/ext_modules.html#setuptools.Extension))
+that controls wheel tagging and the build macros
+([`Py_LIMITED_API`](https://docs.python.org/3/c-api/stable.html#c.Py_LIMITED_API))
+that actually lock a Python extension into a specific `abi3` version.
+
+As a result: it is very easy to compile a Python extension for the wrong `abi3`
+version, or to tag a Python wheel as `abi3` without actually compiling it
+as `abi3`-compatible.
+
+This has serious security and reliability implications: non-stable parts
+of the CPython ABI can change between minor versions, resulting in crashes,
+unpredictable behavior, or potentially exploitable memory corruption when
+a Python extension incorrectly assumes the parameters of a function
+or layout of a structure.
+
 ## Installation
 
 `abi3audit` is available via `pip`:
