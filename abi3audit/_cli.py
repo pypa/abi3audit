@@ -12,7 +12,7 @@ from typing import Any, DefaultDict
 
 from rich.logging import RichHandler
 
-from abi3audit._audit import AuditResult, audit
+from abi3audit._audit import AuditError, AuditResult, audit
 from abi3audit._extract import (
     Extractor,
     InvalidSpec,
@@ -174,6 +174,12 @@ def main() -> None:
         default=sys.stdout,
         help="the path to write the JSON report to (default: stdout)",
     )
+    parser.add_argument(
+        "-S",
+        "--strict",
+        action="store_true",
+        help="fail the entire audit if an individual audit step fails",
+    )
     args = parser.parse_args()
 
     if args.debug:
@@ -196,10 +202,12 @@ def main() -> None:
 
                 try:
                     result = audit(so)
-                except Exception as exc:
+                except AuditError as exc:
                     # TODO(ww): Refine exceptions and error states here.
-                    console.log(f"[red]:thumbs_down: {spec}: auditing error: {exc}")
-                    sys.exit(1)
+                    console.log(f"[red]:skull: {so}: auditing error: {exc}")
+                    if args.strict:
+                        sys.exit(1)
+                    continue
 
                 results.add(extractor, so, result)
                 if not result and args.verbose:
