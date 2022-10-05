@@ -22,12 +22,12 @@ classifiers = [
 ]
 dependencies = [
   "abi3info >= 0.0.5",
-  "CacheControl[filecache]>=0.12.10",
   "kaitaistruct ~= 0.10",
   "packaging ~= 21.3",
   "pefile >= 2022.5.30",
   "pyelftools >= 0.29",
   "requests ~= 2.28.1",
+  "requests-cache ~= 0.9.6",
   "rich ~= 12.5.1",
 ]
 requires-python = ">=3.10"
