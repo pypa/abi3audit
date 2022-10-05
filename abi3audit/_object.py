@@ -113,7 +113,9 @@ class _Dylib(_SharedObjectBase):
                 else:
                     # NOTE: There are technically two other magics for little-endian
                     # Mach-O Fat headers, but they never appear in the wild.
-                    raise SharedObjectError("bad magic (not FAT_MAGIC or FAT_MAGIC_64)")
+                    raise SharedObjectError(
+                        f"bad magic: {hex(magic)} (not FAT_MAGIC or FAT_MAGIC_64)"
+                    )
 
                 (nfat_arch,) = struct.unpack(fieldspec[0], io.read(fieldspec[1]))
                 for _ in range(nfat_arch):
@@ -138,7 +140,6 @@ class _Dylib(_SharedObjectBase):
 
     def __iter__(self) -> Iterator[Symbol]:
         for macho in self._each_macho():
-            # with mach_o.MachO.from_file(self._extractor.path) as macho:
             symtab_cmd = next(
                 (
                     lc.body
@@ -151,8 +152,17 @@ class _Dylib(_SharedObjectBase):
                 raise SharedObjectError("shared object has no symbol table")
 
             for symbol in symtab_cmd.symbols:
+                # TODO(ww): Do a better job of filtering here.
+                # The Mach-O symbol table includes all kinds of junk, including
+                # symbolic entries for debuggers. We should exclude all of
+                # these non-function/data entries, as well as any symbols
+                # that isn't marked as external (since we're linking against
+                # the Python interpreter for the ABI).
+                if (name := symbol.name) is None:
+                    continue
+
                 # All symbols on macOS are prefixed with _; remove it.
-                yield Symbol(symbol.name[1:])
+                yield Symbol(name[1:])
 
 
 class _Dll(_SharedObjectBase):

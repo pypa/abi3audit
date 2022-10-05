@@ -2,6 +2,7 @@
 Core auditing logic for shared objects.
 """
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 
@@ -12,6 +13,8 @@ from rich.table import Table
 
 from abi3audit._object import SharedObject
 from abi3audit._state import status
+
+logger = logging.getLogger(__name__)
 
 
 class AuditError(Exception):
@@ -88,6 +91,7 @@ def audit(so: SharedObject) -> AuditResult:
     future_abi3_objects = set()
 
     status.update(f"{so}: analyzing symbols")
+    logger.debug(f"auditing {so}")
     try:
         for sym in so:
             maybe_abi3 = FUNCTIONS.get(sym)

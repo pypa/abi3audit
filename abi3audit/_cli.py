@@ -198,7 +198,7 @@ def main() -> None:
                     result = audit(so)
                 except Exception as exc:
                     # TODO(ww): Refine exceptions and error states here.
-                    console.log(f"[red]:thumbs_down: auditing error: {exc}")
+                    console.log(f"[red]:thumbs_down: {spec}: auditing error: {exc}")
                     sys.exit(1)
 
                 results.add(extractor, so, result)
