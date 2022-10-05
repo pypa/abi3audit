@@ -35,7 +35,7 @@ Top-level:
 
 <!-- @begin-abi3audit-help@ -->
 ```console
-usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] SPEC [SPEC ...]
+usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] [-S] SPEC [SPEC ...]
 
 Scans Python extensions for abi3 violations and inconsistencies
 
@@ -52,6 +52,8 @@ options:
   -R, --report          generate a JSON report; uses --output
   -o OUTPUT, --output OUTPUT
                         the path to write the JSON report to (default: stdout)
+  -S, --strict          fail the entire audit if an individual audit step
+                        fails
 ```
 <!-- @end-abi3audit-help@ -->
 
