@@ -1,0 +1,28 @@
+name: Scan dependencies for vulnerabilities with pip-audit
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 12 * * *"
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Run pip-audit
+        uses: pypa/gh-action-pip-audit@v1.0.0
+        with:
+          inputs: .
+
