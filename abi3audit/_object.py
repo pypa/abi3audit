@@ -152,17 +152,13 @@ class _Dylib(_SharedObjectBase):
                 raise SharedObjectError("shared object has no symbol table")
 
             for symbol in symtab_cmd.symbols:
-                # TODO(ww): Do a better job of filtering here.
-                # The Mach-O symbol table includes all kinds of junk, including
-                # symbolic entries for debuggers. We should exclude all of
-                # these non-function/data entries, as well as any symbols
-                # that isn't marked as external (since we're linking against
-                # the Python interpreter for the ABI).
-                if (name := symbol.name) is None:
+                # We only care about symbols that have the external bit set,
+                # since these are the ones resolved when linking to CPython.
+                if not symbol.type & 0x01:
                     continue
 
                 # All symbols on macOS are prefixed with _; remove it.
-                yield Symbol(name[1:])
+                yield Symbol(symbol.name[1:])
 
 
 class _Dll(_SharedObjectBase):
