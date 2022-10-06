@@ -10,6 +10,7 @@ import sys
 from collections import defaultdict
 from typing import Any, DefaultDict
 
+from rich import traceback
 from rich.logging import RichHandler
 
 from abi3audit._audit import AuditError, AuditResult, audit
@@ -31,6 +32,8 @@ logging.basicConfig(
     datefmt="[%X]",
     handlers=[RichHandler(console=console)],
 )
+
+traceback.install(show_locals=True)
 
 
 # TODO: Put these helpers somewhere else.
