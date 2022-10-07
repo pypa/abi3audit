@@ -71,13 +71,16 @@ class _So(_SharedObjectBase):
 
     def __iter__(self) -> Iterator[Symbol]:
         with self._extractor.path.open(mode="rb") as io, ELFFile(io) as elf:
+            # The dynamic linker on Linux uses .dynsym, not .symtab, for
+            # link editing and relocation. However, an extension that was
+            # compiled as non-abi3 might have CPython functions inlined into
+            # it, and we'd like to detect those. As such, we scan both symbol
+            # tables.
             symtab = elf.get_section_by_name(".symtab")
             if symtab is not None:
                 for sym in symtab.iter_symbols():
                     yield Symbol(sym.name)
 
-            # NOTE: Experimentally, some versions of pyO3 create
-            # extensions with the symbols in .dynsym instead of .symtab.
             dynsym = elf.get_section_by_name(".dynsym")
             if dynsym is not None:
                 for sym in dynsym.iter_symbols():
