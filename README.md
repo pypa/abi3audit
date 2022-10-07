@@ -214,6 +214,11 @@ yields:
   if that function was introduced in 3.6. This is *not* a false positive
   (it is an ABI version mismatch), but it's *generally* not a source of bugs.
 
+* `abi3audit` checks both the "local" and "external" symbols for each extension,
+  for formats that support both. It does this to catch symbols that have been
+  inlined, such as `_Py_DECREF`. However, if the extension's symbol table
+  has been stripped, these may be missed.
+
 ## Licensing
 
 `abi3audit` is licensed under the MIT license.
