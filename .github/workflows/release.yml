@@ -28,14 +28,14 @@ jobs:
     - name: build
       run: python -m build
 
-    - name: sign
-      uses: sigstore/gh-action-sigstore-python@v0.0.9
-      with:
-        inputs: ./dist/*.tar.gz ./dist/*.whl
-        release-signing-artifacts: true
-
     - name: publish
       uses: pypa/gh-action-pypi-publish@v1.5.1
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
+
+    - name: sign
+      uses: sigstore/gh-action-sigstore-python@v0.0.9
+      with:
+        inputs: ./dist/*.tar.gz ./dist/*.whl
+        release-signing-artifacts: true
