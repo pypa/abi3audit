@@ -9,6 +9,12 @@ jobs:
   pypi:
     name: upload release to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      # Used to sign the release's artifacts with sigstore-python.
+      id-token: write
+
+      # Used to attach signing artifacts to the published release.
+      contents: write
     steps:
     - uses: actions/checkout@v3
 
@@ -21,6 +27,12 @@ jobs:
 
     - name: build
       run: python -m build
+
+    - name: sign
+      uses: sigstore/gh-action-sigstore-python@v0.0.9
+      with:
+        inputs: ./dist/*.tar.gz ./dist/*.whl
+        release-signing-artifacts: true
 
     - name: publish
       uses: pypa/gh-action-pypi-publish@v1.5.1
