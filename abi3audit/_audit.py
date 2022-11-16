@@ -81,7 +81,13 @@ class AuditResult:
 
 
 def audit(so: SharedObject) -> AuditResult:
+    # We might fail to retrieve a minimum abi3 baseline if our context
+    # (the shared object or its containing wheel) isn't actually tagged
+    # as abi3 compatible.
     baseline = so.abi3_version()
+    if baseline is None:
+        raise AuditError("failed to determine ABI version baseline: not abi3 tagged?")
+
     # In principle, our computed abi3 version could be lower than our baseline version,
     # if for example an abi3-py36 wheel only used interfaces present in abi3-py35.
     # But this wouldn't actually *make* the wheel abi3-py35, since CPython
