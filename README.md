@@ -7,6 +7,8 @@ abi3audit
 [![Packaging status](https://repology.org/badge/tiny-repos/python:abi3audit.svg)](https://repology.org/project/python:abi3audit/versions)
 <!--- @end-badges@ --->
 
+*[Read our blog post about how we find bugs with `abi3audit`!](https://blog.trailofbits.com/2022/11/15/python-wheels-abi-abi3audit/)*
+
 `abi3audit` scans Python extensions for `abi3` violations and inconsistencies.
 
 It can scan individual (unpackaged) shared objects, packaged wheels, or entire
