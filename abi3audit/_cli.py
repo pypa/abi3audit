@@ -188,6 +188,7 @@ def main() -> None:
     logger.debug(f"parsed arguments: {args}")
 
     results = SpecResults()
+    all_passed = True
     with status:
         for spec in set(args.specs):
             status.update(f"auditing {spec}")
@@ -202,6 +203,7 @@ def main() -> None:
 
                 try:
                     result = audit(so)
+                    all_passed = all_passed and bool(result)
                 except AuditError as exc:
                     # TODO(ww): Refine exceptions and error states here.
                     console.log(f"[red]:skull: {so}: auditing error: {exc}")
@@ -217,3 +219,6 @@ def main() -> None:
 
     if args.report:
         print(json.dumps(results.json()), file=args.output)
+
+    if not all_passed:
+        sys.exit(1)
