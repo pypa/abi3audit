@@ -203,7 +203,7 @@ def main() -> None:
 
                 try:
                     result = audit(so)
-                    all_passed = all_passed and result
+                    all_passed = all_passed and bool(result)
                 except AuditError as exc:
                     # TODO(ww): Refine exceptions and error states here.
                     console.log(f"[red]:skull: {so}: auditing error: {exc}")
