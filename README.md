@@ -18,8 +18,6 @@ package version histories.
   <img alt="An animated demonstration of abi3audit in action" src="https://user-images.githubusercontent.com/3059210/194171233-a61a81d2-f2ed-4078-8988-903f996ba2e3.gif">
 </p>
 
-⚠️ This project is not ready for general-purpose use! ⚠️
-
 ## Why?
 
 CPython (the reference implementation of Python) defines a stable API and corresponding
