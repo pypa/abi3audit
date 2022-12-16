@@ -8,7 +8,7 @@ import logging
 import os
 import sys
 from collections import defaultdict
-from typing import Any, DefaultDict
+from typing import Any, DefaultDict, Tuple
 
 from rich import traceback
 from rich.logging import RichHandler
@@ -53,6 +53,17 @@ def _colornum(n: int) -> str:
     if n == 0:
         return _green(str(n))
     return _red(str(n))
+
+
+def _ensure_version(version: str) -> Tuple[int, int]:
+    error_msg = f"Version must have syntax 3.x, with x>=2. You gave '{version}'"
+    try:
+        version_ints = tuple(int(x) for x in version.split("."))
+    except Exception:
+        raise ValueError(error_msg)
+    if len(version_ints) != 2 or version_ints < (3, 2) or version_ints >= (4,):
+        raise ValueError(error_msg)
+    return version_ints
 
 
 class SpecResults:
@@ -180,6 +191,12 @@ def main() -> None:
         action="store_true",
         help="fail the entire audit if an individual audit step fails",
     )
+    parser.add_argument(
+        "--assume-minimum-abi3",
+        type=_ensure_version,
+        default=(3, 2),
+        help="assumed abi3 version (3.x) if it cannot be detected",
+    )
     args = parser.parse_args()
 
     if args.debug:
@@ -202,7 +219,7 @@ def main() -> None:
                 status.update(f"{spec}: auditing {so}")
 
                 try:
-                    result = audit(so)
+                    result = audit(so, assume_minimum_abi3=args.assume_minimum_abi3)
                     all_passed = all_passed and bool(result)
                 except AuditError as exc:
                     # TODO(ww): Refine exceptions and error states here.
