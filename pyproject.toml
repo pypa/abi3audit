@@ -21,7 +21,7 @@ classifiers = [
   "Topic :: Security",
 ]
 dependencies = [
-  "abi3info >= 0.0.5",
+  "abi3info >= 2022.12.06",
   "kaitaistruct ~= 0.10",
   "packaging >= 21.3,< 23.0",
   "pefile >= 2022.5.30",
