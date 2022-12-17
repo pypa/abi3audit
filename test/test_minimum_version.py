@@ -1,9 +1,9 @@
 import pytest
 
-from abi3audit._cli import _ensure_version
+from abi3audit._cli import _PyVersionAction
 
 @pytest.mark.parametrize(
-    "version, ok", 
+    "version, ok",
     (
         ("3.3", True,),
         ("3.12", True,),
@@ -18,11 +18,9 @@ from abi3audit._cli import _ensure_version
 )
 def test_ensure_version(version, ok):
     if ok:
-        version_ints = _ensure_version(version)
-        assert isinstance(version_ints, tuple)
-        assert isinstance(version_ints[0], int)
-        assert isinstance(version_ints[1], int)
-        assert len(version_ints) == 2
+        pyversion = _PyVersionAction._ensure_pyversion(version)
+        assert pyversion.major == 3
+        assert pyversion.minor >= 2
     else:
         with pytest.raises(ValueError):
-            _ensure_version(version)
+            _PyVersionAction._ensure_pyversion(version)

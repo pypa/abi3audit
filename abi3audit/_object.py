@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Iterator, Optional, Tuple
+from typing import Iterator, Optional
 
 import pefile
 from abi3info.models import PyVersion, Symbol
@@ -27,14 +27,11 @@ class _SharedObjectBase:
     A mixin for common behavior between all types of shared objects.
     """
 
-    def __init__(
-        self, 
-        extractor: extract.SharedObjectExtractor, 
-    ):
+    def __init__(self, extractor: extract.SharedObjectExtractor):
         self._extractor = extractor
         self.path = self._extractor.path
 
-    def abi3_version(self, assume_lowest: Tuple[int, int] = (3, 2)) -> Optional[PyVersion]:
+    def abi3_version(self, assume_lowest: PyVersion = PyVersion(3, 2)) -> Optional[PyVersion]:
         # If we're dealing with a shared object that was extracted from a wheel,
         # we try and suss out the abi3 version from the wheel's own tags.
         if self._extractor.parent is not None:
@@ -54,9 +51,9 @@ class _SharedObjectBase:
         if ".abi3" in self._extractor.path.suffixes:
             logger.warning(
                 "no wheel to infer abi3 version from; assuming (%s)",
-                ".".join([str(x) for x in assume_lowest]),
+                assume_lowest,
             )
-            return PyVersion(*assume_lowest)
+            return assume_lowest
 
         # With no wheel tags and no filename tag, we have nothing to go on.
         return None
