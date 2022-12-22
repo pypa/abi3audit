@@ -80,11 +80,11 @@ class AuditResult:
             yield f"[green]:thumbs_up: {self.so}"
 
 
-def audit(so: SharedObject) -> AuditResult:
+def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) -> AuditResult:
     # We might fail to retrieve a minimum abi3 baseline if our context
     # (the shared object or its containing wheel) isn't actually tagged
     # as abi3 compatible.
-    baseline = so.abi3_version()
+    baseline = so.abi3_version(assume_lowest=assume_minimum_abi3)
     if baseline is None:
         raise AuditError("failed to determine ABI version baseline: not abi3 tagged?")
 

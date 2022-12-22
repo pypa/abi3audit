@@ -10,6 +10,7 @@ import sys
 from collections import defaultdict
 from typing import Any, DefaultDict
 
+from abi3info.models import PyVersion
 from rich import traceback
 from rich.logging import RichHandler
 
@@ -53,6 +54,26 @@ def _colornum(n: int) -> str:
     if n == 0:
         return _green(str(n))
     return _red(str(n))
+
+
+class _PyVersionAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        try:
+            pyversion = self._ensure_pyversion(values)
+        except ValueError as exc:
+            raise argparse.ArgumentError(self, str(exc))
+        setattr(namespace, self.dest, pyversion)
+
+    @classmethod
+    def _ensure_pyversion(cls, version: str) -> PyVersion:
+        error_msg = f"must have syntax '3.x', with x>=2; you gave '{version}'"
+        try:
+            pyversion = PyVersion.parse_dotted(version)
+        except Exception:
+            raise ValueError(error_msg)
+        if pyversion.major != 3 or pyversion.minor < 2:
+            raise ValueError(error_msg)
+        return pyversion
 
 
 class SpecResults:
@@ -180,6 +201,12 @@ def main() -> None:
         action="store_true",
         help="fail the entire audit if an individual audit step fails",
     )
+    parser.add_argument(
+        "--assume-minimum-abi3",
+        action=_PyVersionAction,
+        default=PyVersion(3, 2),
+        help="assumed abi3 version (3.x, with x>=2) if it cannot be detected",
+    )
     args = parser.parse_args()
 
     if args.debug:
@@ -202,7 +229,7 @@ def main() -> None:
                 status.update(f"{spec}: auditing {so}")
 
                 try:
-                    result = audit(so)
+                    result = audit(so, assume_minimum_abi3=args.assume_minimum_abi3)
                     all_passed = all_passed and bool(result)
                 except AuditError as exc:
                     # TODO(ww): Refine exceptions and error states here.

@@ -79,7 +79,9 @@ Top-level:
 
 <!-- @begin-abi3audit-help@ -->
 ```console
-usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] [-S] SPEC [SPEC ...]
+usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] [-S]
+                 [--assume-minimum-abi3 ASSUME_MINIMUM_ABI3]
+                 SPEC [SPEC ...]
 
 Scans Python extensions for abi3 violations and inconsistencies
 
@@ -98,6 +100,9 @@ options:
                         the path to write the JSON report to (default: stdout)
   -S, --strict          fail the entire audit if an individual audit step
                         fails
+  --assume-minimum-abi3 ASSUME_MINIMUM_ABI3
+                        assumed abi3 version (3.x, with x>=2) if it cannot be
+                        detected
 ```
 <!-- @end-abi3audit-help@ -->
 
