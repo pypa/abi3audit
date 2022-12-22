@@ -57,7 +57,13 @@ def _colornum(n: int) -> str:
 
 
 class _PyVersionAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Any,
+        option_string: Any = None,
+    ) -> None:
         try:
             pyversion = self._ensure_pyversion(values)
         except ValueError as exc:
