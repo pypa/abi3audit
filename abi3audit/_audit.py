@@ -4,7 +4,7 @@ Core auditing logic for shared objects.
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Tuple
+from typing import Any
 
 from abi3info import DATAS, FUNCTIONS
 from abi3info.models import Data, Function, PyVersion, Symbol
