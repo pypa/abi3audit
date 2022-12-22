@@ -2,19 +2,20 @@ import pytest
 
 from abi3audit._cli import _PyVersionAction
 
+
 @pytest.mark.parametrize(
     "version, ok",
     (
-        ("3.3", True,),
-        ("3.12", True,),
-        ("3.a", False,),
-        ("2.7", False,),
-        ("3.1", False,),
-        ("4.0", False,),
-        ("5", False,),
-        ("3", False,),
-        ("3.7.1", False,),
-    )
+        ("3.3", True),
+        ("3.12", True),
+        ("3.a", False),
+        ("2.7", False),
+        ("3.1", False),
+        ("4.0", False),
+        ("5", False),
+        ("3", False),
+        ("3.7.1", False),
+    ),
 )
 def test_ensure_version(version, ok):
     if ok:
