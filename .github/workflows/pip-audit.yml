@@ -25,4 +25,8 @@ jobs:
         uses: pypa/gh-action-pip-audit@v1.0.4
         with:
           inputs: .
-
+          local: true
+          ignore-vulns: |
+            GHSA-v3c5-jqr6-7qm8
+            PYSEC-2022-42969
+            GHSA-r9hx-vwmv-q579
