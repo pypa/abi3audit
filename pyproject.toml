@@ -28,7 +28,7 @@ dependencies = [
   "pyelftools >= 0.29",
   "requests ~= 2.28.1",
   "requests-cache ~= 0.9.6",
-  "rich >= 12.5.1,< 13.2.0",
+  "rich >= 12.5.1,< 13.3.0",
 ]
 requires-python = ">=3.10"
 
