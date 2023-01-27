@@ -2,9 +2,11 @@
 Core auditing logic for shared objects.
 """
 
+from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Union
 
 from abi3info import DATAS, FUNCTIONS
 from abi3info.models import Data, Function, PyVersion, Symbol
@@ -21,13 +23,13 @@ class AuditError(Exception):
     pass
 
 
-@dataclass(frozen=True, eq=True, slots=True)
+@dataclass(frozen=True, eq=True)
 class AuditResult:
     so: SharedObject
     baseline: PyVersion
     computed: PyVersion
     non_abi3_symbols: set[Symbol]
-    future_abi3_objects: set[Function | Data]
+    future_abi3_objects: set[Union[Function, Data]]
 
     def is_abi3(self) -> bool:
         return len(self.non_abi3_symbols) == 0

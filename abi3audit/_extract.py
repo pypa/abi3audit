@@ -8,7 +8,7 @@ import logging
 import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Union
 from zipfile import ZipFile
 
 from packaging import utils
@@ -84,7 +84,7 @@ class PyPISpec(str):
         return PyPIExtractor(self)
 
 
-Spec = WheelSpec | SharedObjectSpec | PyPISpec
+Spec = Union[WheelSpec, SharedObjectSpec, PyPISpec]
 
 
 def make_spec(val: str) -> Spec:
@@ -172,22 +172,21 @@ class SharedObjectExtractor:
             return magic == b"\x7FELF"
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
-        match self.path.suffix:
-            case ".so":
-                # Python uses .so for extensions on macOS as well, rather
-                # than the normal .dylib extension. As a result, we have to
-                # suss out the underlying format from the wheel's tags,
-                # or from the magic bytes as a last result.
-                if (
-                    self.parent
-                    and any("macosx" in t.platform for t in self.parent.tagset)
-                    or not self._elf_magic()
-                ):
-                    yield _object._Dylib(self)
-                else:
-                    yield _object._So(self)
-            case ".pyd":
-                yield _object._Dll(self)
+        if self.path.suffix == ".so":
+            # Python uses .so for extensions on macOS as well, rather
+            # than the normal .dylib extension. As a result, we have to
+            # suss out the underlying format from the wheel's tags,
+            # or from the magic bytes as a last result.
+            if (
+                self.parent
+                and any("macosx" in t.platform for t in self.parent.tagset)
+                or not self._elf_magic()
+            ):
+                yield _object._Dylib(self)
+            else:
+                yield _object._So(self)
+        elif self.path.suffix == ".pyd":
+            yield _object._Dll(self)
 
     def __str__(self) -> str:
         return self.path.name
@@ -271,4 +270,4 @@ class PyPIExtractor:
         return self.spec
 
 
-Extractor = WheelExtractor | SharedObjectExtractor | PyPIExtractor
+Extractor = Union[WheelExtractor, SharedObjectExtractor, PyPIExtractor]
