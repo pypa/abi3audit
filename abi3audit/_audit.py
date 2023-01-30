@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Union
+from typing import Any
 
 from abi3info import DATAS, FUNCTIONS
 from abi3info.models import Data, Function, PyVersion, Symbol
