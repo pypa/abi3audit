@@ -29,7 +29,7 @@ class AuditResult:
     baseline: PyVersion
     computed: PyVersion
     non_abi3_symbols: set[Symbol]
-    future_abi3_objects: set[Union[Function, Data]]
+    future_abi3_objects: set[Function | Data]
 
     def is_abi3(self) -> bool:
         return len(self.non_abi3_symbols) == 0
