@@ -15,13 +15,14 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.10",
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Topic :: Security",
 ]
 dependencies = [
-  "abi3info >= 2022.12.06",
+  "abi3info >= 2023.01.27",
   "kaitaistruct ~= 0.10",
   "packaging >= 21.3,< 24.0",
   "pefile >= 2022.5.30",
@@ -30,7 +31,7 @@ dependencies = [
   "requests-cache ~= 0.9.6",
   "rich >= 12.5.1,< 13.4.0",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 
 [project.urls]
 Homepage = "https://pypi.org/project/abi3audit/"

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 import struct
-from typing import Iterator, Optional
+from typing import Iterator, Optional, Union
 
 import pefile
 from abi3info.models import PyVersion, Symbol
@@ -189,4 +189,4 @@ class _Dll(_SharedObjectBase):
                     yield Symbol(imp.name.decode())
 
 
-SharedObject = _So | _Dll | _Dylib
+SharedObject = Union[_So, _Dll, _Dylib]

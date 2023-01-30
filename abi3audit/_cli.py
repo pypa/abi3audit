@@ -2,6 +2,8 @@
 The `abi3audit` CLI.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging
@@ -148,13 +150,12 @@ class SpecResults:
 
         def _one_extractor(extractor: Extractor, results: list[AuditResult]) -> dict[str, Any]:
             body: dict[str, Any]
-            match extractor.spec:
-                case WheelSpec(_):
-                    body = {"kind": "wheel", "wheel": _one_wheel(results)}
-                case SharedObjectSpec(_):
-                    body = {"kind": "object", "object": _one_object(results)}
-                case PyPISpec(_):
-                    body = {"kind": "package", "package": _one_package(results)}
+            if isinstance(extractor.spec, WheelSpec):
+                body = {"kind": "wheel", "wheel": _one_wheel(results)}
+            elif isinstance(extractor.spec, SharedObjectSpec):
+                body = {"kind": "object", "object": _one_object(results)}
+            elif isinstance(extractor.spec, PyPISpec):
+                body = {"kind": "package", "package": _one_package(results)}
             return body
 
         summary: dict[str, Any] = {}
