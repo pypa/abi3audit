@@ -30,7 +30,7 @@ version.
 To signal that a Python wheel contains `abi3`-compatible extensions,
 the Python packaging ecosystem uses the `abi3` wheel tag, e.g.:
 
-```
+```text
 pyrage-1.0.1-cp37-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.whl
 ```
 
