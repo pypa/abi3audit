@@ -19,7 +19,6 @@ jobs:
     uses: trailofbits/.github/.github/workflows/lint.yml@v0.0.4
     with:
       language: markdown
-      org-repo-ref: ww/markdownlint
 
   check-readme:
     runs-on: ubuntu-latest

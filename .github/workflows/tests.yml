@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: test
-        run: make test ABI3AUDIT_EXTRA=test
+        run: make test INSTALL_EXTRA=test
 
   all-tests-pass:
     if: always()
