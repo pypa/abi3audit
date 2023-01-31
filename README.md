@@ -1,5 +1,4 @@
-abi3audit
-========
+# abi3audit
 
 <!--- @begin-badges@ --->
 [![CI](https://github.com/trailofbits/abi3audit/actions/workflows/ci.yml/badge.svg)](https://github.com/trailofbits/abi3audit/actions/workflows/ci.yml)
@@ -14,9 +13,7 @@ abi3audit
 It can scan individual (unpackaged) shared objects, packaged wheels, or entire
 package version histories.
 
-<p align="center">
-  <img alt="An animated demonstration of abi3audit in action" src="https://user-images.githubusercontent.com/3059210/194171233-a61a81d2-f2ed-4078-8988-903f996ba2e3.gif">
-</p>
+![An animated demonstration of abi3audit in action](https://user-images.githubusercontent.com/3059210/194171233-a61a81d2-f2ed-4078-8988-903f996ba2e3.gif)
 
 ## Why?
 
@@ -33,7 +30,7 @@ version.
 To signal that a Python wheel contains `abi3`-compatible extensions,
 the Python packaging ecosystem uses the `abi3` wheel tag, e.g.:
 
-```
+```text
 pyrage-1.0.1-cp37-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.whl
 ```
 
