@@ -102,4 +102,4 @@ omit = ["abi3audit/_vendor/*"]
 [tool.ruff]
 line-length = 100
 select = ["E", "F", "W", "UP"]
-target-version = "py310"
+target-version = "py38"

@@ -2,6 +2,8 @@
 `abi3audit` CLI state, broken out to avoid circular imports.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 from typing import Literal
