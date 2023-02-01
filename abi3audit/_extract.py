@@ -6,9 +6,10 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator, Optional, Union
+from typing import Union
 from zipfile import ZipFile
 
 from packaging import utils
@@ -122,7 +123,7 @@ class WheelExtractor:
     This extractor collects and yields each shared object in the specified wheel.
     """
 
-    def __init__(self, spec: WheelSpec, parent: Optional[PyPIExtractor] = None) -> None:
+    def __init__(self, spec: WheelSpec, parent: PyPIExtractor | None = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
         self.parent = parent
@@ -158,7 +159,7 @@ class SharedObjectExtractor:
     the spec it created with.
     """
 
-    def __init__(self, spec: SharedObjectSpec, parent: Optional[WheelExtractor] = None) -> None:
+    def __init__(self, spec: SharedObjectSpec, parent: WheelExtractor | None = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
         self.parent = parent

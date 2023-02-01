@@ -52,14 +52,15 @@ lint: $(VENV_EXISTS)
 	. $(VENV_BIN)/activate && \
 		black --check $(ALL_PY_SRCS) && \
 		isort --check $(ALL_PY_SRCS) && \
-		flake8 $(ALL_PY_SRCS) && \
+		ruff $(ALL_PY_SRCS) && \
 		mypy $(PY_MODULE)
 		# TODO: Enable.
 		# interrogate -c pyproject.toml .
 
 .PHONY: format
-format:
+format: $(VENV_EXISTS)
 	. $(VENV_BIN)/activate && \
+		ruff --fix $(ALL_PY_SRCS) && \
 		black $(ALL_PY_SRCS) && \
 		isort $(ALL_PY_SRCS)
 

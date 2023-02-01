@@ -2,15 +2,17 @@
 `abi3audit` CLI state, broken out to avoid circular imports.
 """
 
+from __future__ import annotations
+
 import os
 import sys
-from typing import Literal, Optional
+from typing import Literal
 
 from rich.console import Console
 
 # TODO: Remove this once rich's NO_COLOR handling is fixed.
 # See: https://github.com/Textualize/rich/issues/2549
-_color_system: Optional[Literal["auto"]]
+_color_system: Literal["auto"] | None
 if os.getenv("NO_COLOR", None) is not None:
     _color_system = None
 else:

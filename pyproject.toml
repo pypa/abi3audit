@@ -47,11 +47,11 @@ test = [
 ]
 lint = [
   "bandit",
-  "flake8",
   "black",
   "isort",
   "interrogate",
   "mypy",
+  "ruff",
   "types-requests",
 ]
 dev = [
@@ -98,3 +98,8 @@ line-length = 100
 
 [tool.coverage.run]
 omit = ["abi3audit/_vendor/*"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "UP"]
+target-version = "py38"
