@@ -2,6 +2,8 @@
 Core auditing logic for shared objects.
 """
 
+from __future__ import annotations
+
 import logging
 from dataclasses import dataclass
 from typing import Any
@@ -21,7 +23,7 @@ class AuditError(Exception):
     pass
 
 
-@dataclass(frozen=True, eq=True, slots=True)
+@dataclass(frozen=True, eq=True)
 class AuditResult:
     so: SharedObject
     baseline: PyVersion

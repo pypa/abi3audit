@@ -6,9 +6,10 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterator, Optional
+from typing import Union
 from zipfile import ZipFile
 
 from packaging import utils
@@ -84,7 +85,7 @@ class PyPISpec(str):
         return PyPIExtractor(self)
 
 
-Spec = WheelSpec | SharedObjectSpec | PyPISpec
+Spec = Union[WheelSpec, SharedObjectSpec, PyPISpec]
 
 
 def make_spec(val: str) -> Spec:
@@ -122,7 +123,7 @@ class WheelExtractor:
     This extractor collects and yields each shared object in the specified wheel.
     """
 
-    def __init__(self, spec: WheelSpec, parent: Optional[PyPIExtractor] = None) -> None:
+    def __init__(self, spec: WheelSpec, parent: PyPIExtractor | None = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
         self.parent = parent
@@ -158,7 +159,7 @@ class SharedObjectExtractor:
     the spec it created with.
     """
 
-    def __init__(self, spec: SharedObjectSpec, parent: Optional[WheelExtractor] = None) -> None:
+    def __init__(self, spec: SharedObjectSpec, parent: WheelExtractor | None = None) -> None:
         self.spec = spec
         self.path = Path(self.spec)
         self.parent = parent
@@ -172,22 +173,21 @@ class SharedObjectExtractor:
             return magic == b"\x7FELF"
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
-        match self.path.suffix:
-            case ".so":
-                # Python uses .so for extensions on macOS as well, rather
-                # than the normal .dylib extension. As a result, we have to
-                # suss out the underlying format from the wheel's tags,
-                # or from the magic bytes as a last result.
-                if (
-                    self.parent
-                    and any("macosx" in t.platform for t in self.parent.tagset)
-                    or not self._elf_magic()
-                ):
-                    yield _object._Dylib(self)
-                else:
-                    yield _object._So(self)
-            case ".pyd":
-                yield _object._Dll(self)
+        if self.path.suffix == ".so":
+            # Python uses .so for extensions on macOS as well, rather
+            # than the normal .dylib extension. As a result, we have to
+            # suss out the underlying format from the wheel's tags,
+            # or from the magic bytes as a last result.
+            if (
+                self.parent
+                and any("macosx" in t.platform for t in self.parent.tagset)
+                or not self._elf_magic()
+            ):
+                yield _object._Dylib(self)
+            else:
+                yield _object._So(self)
+        elif self.path.suffix == ".pyd":
+            yield _object._Dll(self)
 
     def __str__(self) -> str:
         return self.path.name
@@ -271,4 +271,4 @@ class PyPIExtractor:
         return self.spec
 
 
-Extractor = WheelExtractor | SharedObjectExtractor | PyPIExtractor
+Extractor = Union[WheelExtractor, SharedObjectExtractor, PyPIExtractor]
