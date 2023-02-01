@@ -137,7 +137,7 @@ class _Dylib(_SharedObjectBase):
 
                 # Finally, parse each Mach-O.
                 logger.debug(f"fat macho: identified {nfat_arch} mach-o slices: {macho_slices}")
-                for (offset, size) in macho_slices:
+                for offset, size in macho_slices:
                     io.seek(offset)
                     raw_macho = io.read(size)
 
