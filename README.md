@@ -15,7 +15,16 @@ package version histories.
 
 ![An animated demonstration of abi3audit in action](https://user-images.githubusercontent.com/3059210/194171233-a61a81d2-f2ed-4078-8988-903f996ba2e3.gif)
 
-## Why?
+## Index
+
+* [Motivation](#motivation)
+* [Installation](#installation)
+* [Usage](#usage)
+  * [Examples](#examples)
+* [Limitations](#limitations)
+* [Licensing](#licensing)
+
+## Motivation
 
 CPython (the reference implementation of Python) defines a stable API and corresponding
 ABI ("`abi3`"). In principle, any CPython extension can be built against this
