@@ -50,8 +50,7 @@ $(VENV_EXISTS): pyproject.toml
 .PHONY: lint
 lint: $(VENV_EXISTS)
 	. $(VENV_BIN)/activate && \
-		black --check $(ALL_PY_SRCS) && \
-		isort --check $(ALL_PY_SRCS) && \
+		ruff format --check $(ALL_PY_SRCS) && \
 		ruff $(ALL_PY_SRCS) && \
 		mypy $(PY_MODULE)
 		# TODO: Enable.
@@ -61,8 +60,7 @@ lint: $(VENV_EXISTS)
 format: $(VENV_EXISTS)
 	. $(VENV_BIN)/activate && \
 		ruff --fix $(ALL_PY_SRCS) && \
-		black $(ALL_PY_SRCS) && \
-		isort $(ALL_PY_SRCS)
+		ruff format $(ALL_PY_SRCS)
 
 .PHONY: test tests
 test tests: $(VENV_EXISTS)
