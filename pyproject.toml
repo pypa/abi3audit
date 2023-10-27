@@ -38,16 +38,11 @@ Source = "https://github.com/trailofbits/abi3audit"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "pretend", "coverage[toml]"]
-lint = ["bandit", "isort", "interrogate", "mypy", "ruff", "types-requests"]
+lint = ["bandit", "interrogate", "mypy", "ruff", "types-requests"]
 dev = ["build", "pdoc3", "abi3audit[test,lint]"]
 
 [project.scripts]
 abi3audit = "abi3audit._cli:main"
-
-[tool.isort]
-multi_line_output = 3
-known_first_party = "abi3audit"
-include_trailing_comma = true
 
 [tool.interrogate]
 exclude = ["env", "test", "codegen"]
@@ -79,5 +74,5 @@ omit = ["abi3audit/_vendor/*"]
 
 [tool.ruff]
 line-length = 100
-select = ["E", "F", "W", "UP"]
+select = ["E", "F", "I", "W", "UP"]
 target-version = "py38"
