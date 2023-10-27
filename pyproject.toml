@@ -8,9 +8,7 @@ dynamic = ["version"]
 description = "Scans Python wheels for abi3 violations and inconsistencies"
 readme = "README.md"
 license = { file = "LICENSE" }
-authors = [
-  { name = "William Woodruff", email = "william@trailofbits.com" }
-]
+authors = [{ name = "William Woodruff", email = "william@trailofbits.com" }]
 classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3 :: Only",
@@ -39,26 +37,9 @@ Issues = "https://github.com/trailofbits/abi3audit/issues"
 Source = "https://github.com/trailofbits/abi3audit"
 
 [project.optional-dependencies]
-test = [
-  "pytest",
-  "pytest-cov",
-  "pretend",
-  "coverage[toml]",
-]
-lint = [
-  "bandit",
-  "black",
-  "isort",
-  "interrogate",
-  "mypy",
-  "ruff",
-  "types-requests",
-]
-dev = [
-  "build",
-  "pdoc3",
-  "abi3audit[test,lint]",
-]
+test = ["pytest", "pytest-cov", "pretend", "coverage[toml]"]
+lint = ["bandit", "isort", "interrogate", "mypy", "ruff", "types-requests"]
+dev = ["build", "pdoc3", "abi3audit[test,lint]"]
 
 [project.scripts]
 abi3audit = "abi3audit._cli:main"
@@ -92,9 +73,6 @@ warn_unused_ignores = true
 
 [tool.bandit]
 exclude_dirs = ["./test"]
-
-[tool.black]
-line-length = 100
 
 [tool.coverage.run]
 omit = ["abi3audit/_vendor/*"]

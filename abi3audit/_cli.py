@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 from collections import defaultdict
-from typing import Any, DefaultDict
+from typing import Any
 
 from abi3info.models import PyVersion
 from rich import traceback
@@ -87,9 +87,9 @@ class _PyVersionAction(argparse.Action):
 class SpecResults:
     def __init__(self) -> None:
         # Map of extractor -> shared object -> audit result
-        self._results: DefaultDict[Extractor, list[AuditResult]] = defaultdict(list)
-        self._bad_abi3_version_counts: DefaultDict[SharedObject, int] = defaultdict(int)
-        self._abi3_violation_counts: DefaultDict[SharedObject, int] = defaultdict(int)
+        self._results: defaultdict[Extractor, list[AuditResult]] = defaultdict(list)
+        self._bad_abi3_version_counts: defaultdict[SharedObject, int] = defaultdict(int)
+        self._abi3_violation_counts: defaultdict[SharedObject, int] = defaultdict(int)
 
     def add(self, extractor: Extractor, so: SharedObject, result: AuditResult) -> None:
         self._results[extractor].append(result)
