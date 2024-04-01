@@ -170,7 +170,7 @@ class SharedObjectExtractor:
     def _elf_magic(self) -> bool:
         with self.path.open("rb") as io:
             magic = io.read(4)
-            return magic == b"\x7FELF"
+            return magic == b"\x7fELF"
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
         if self.path.suffix == ".so":
