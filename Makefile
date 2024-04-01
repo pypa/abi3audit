@@ -59,7 +59,7 @@ lint: $(VENV_EXISTS)
 .PHONY: format
 format: $(VENV_EXISTS)
 	. $(VENV_BIN)/activate && \
-		ruff --fix $(ALL_PY_SRCS) && \
+		ruff check --fix $(ALL_PY_SRCS) && \
 		ruff format $(ALL_PY_SRCS)
 
 .PHONY: test tests
