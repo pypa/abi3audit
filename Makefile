@@ -51,7 +51,7 @@ $(VENV_EXISTS): pyproject.toml
 lint: $(VENV_EXISTS)
 	. $(VENV_BIN)/activate && \
 		ruff format --check $(ALL_PY_SRCS) && \
-		ruff $(ALL_PY_SRCS) && \
+		ruff check $(ALL_PY_SRCS) && \
 		mypy $(PY_MODULE)
 		# TODO: Enable.
 		# interrogate -c pyproject.toml .
