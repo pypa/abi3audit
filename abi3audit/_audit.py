@@ -18,6 +18,13 @@ from abi3audit._state import status
 
 logger = logging.getLogger(__name__)
 
+# A handpicked exclusion list of symbols that are not strictly in the limited API
+# or stable ABI, but in practice always appear in ABI3-compatible code.
+# Since they are not listed in CPython's `stable_abi.toml`, we maintain them here separately.
+# For more information, see https://github.com/trailofbits/abi3audit/issues/85
+# and https://github.com/wjakob/nanobind/discussions/500.
+_ALLOWED_SYMBOL_NAMES: set[str] = {"Py_XDECREF"}
+
 
 class AuditError(Exception):
     pass
@@ -112,7 +119,8 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                 if maybe_abi3.added > baseline:
                     future_abi3_objects.add(maybe_abi3)
             elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
-                non_abi3_symbols.add(sym)
+                if sym.name not in _ALLOWED_SYMBOL_NAMES:
+                    non_abi3_symbols.add(sym)
     except Exception as exc:
         raise AuditError(f"failed to collect symbols in shared object: {exc}")
 
