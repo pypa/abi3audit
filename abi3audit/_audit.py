@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Since they are not listed in CPython's `stable_abi.toml`, we maintain them here separately.
 # For more information, see https://github.com/trailofbits/abi3audit/issues/85
 # and https://github.com/wjakob/nanobind/discussions/500.
-_ALLOWED_SYMBOL_NAMES: set[Symbol] = {Symbol(name="Py_XDECREF", visibility="hidden")}
+_ALLOWED_SYMBOLS: set[Symbol] = {Symbol(name="Py_XDECREF", visibility="local")}
 
 
 class AuditError(Exception):
@@ -118,8 +118,8 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                     computed = maybe_abi3.added
                 if maybe_abi3.added > baseline:
                     future_abi3_objects.add(maybe_abi3)
-            elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
-                if sym.name not in _ALLOWED_SYMBOLS:
+            elif sym.name.startswith(("Py_", "_Py_")):
+                if sym not in _ALLOWED_SYMBOLS:
                     non_abi3_symbols.add(sym)
     except Exception as exc:
         raise AuditError(f"failed to collect symbols in shared object: {exc}")

@@ -7,22 +7,16 @@ from __future__ import annotations
 import logging
 import struct
 from collections.abc import Iterator
-from typing import Union
+from typing import Any, Union
 
 import pefile
-from abi3info.models import PyVersion, Symbol
+from abi3info.models import PyVersion, Symbol, Visibility
 from elftools.elf.elffile import ELFFile
 
 import abi3audit._extract as extract
 from abi3audit._vendor import mach_o
 
 logger = logging.getLogger(__name__)
-
-
-st_info_to_viz = {
-    "STB_LOCAL": "hidden",
-    "STB_GLOBAL": "default",
-}
 
 
 class SharedObjectError(Exception):
@@ -80,9 +74,16 @@ class _So(_SharedObjectBase):
     """
 
     def __iter__(self) -> Iterator[Symbol]:
-        def get_visibility(_sym) -> str | None:
-            elfviz = _sym.entry.st_info.bind
-            return st_info_to_viz.get(elfviz)
+        def get_visibility(_sym: Any) -> Visibility:
+            elfviz: str = _sym.entry.st_info.bind
+            if elfviz == "STB_LOCAL":
+                return "local"
+            elif elfviz == "STB_GLOBAL":
+                return "global"
+            elif elfviz == "STB_WEAK":
+                return "weak"
+            else:
+                raise TypeError(f"unexpected ELF visibility value {elfviz!r}")
 
         with self._extractor.path.open(mode="rb") as io, ELFFile(io) as elf:
             # The dynamic linker on Linux uses .dynsym, not .symtab, for
@@ -156,7 +157,7 @@ class _Dylib(_SharedObjectBase):
                         yield macho
 
     def __iter__(self) -> Iterator[Symbol]:
-        def get_visibility(_macho_sym) -> str | None:
+        def get_visibility(_macho_sym: Any) -> Visibility:
             # N_TYPE is the bitmask giving the Mach-O symbol type.
             # Possible values are:
             # 0x0 - symbol undefined, missing section field.
@@ -167,10 +168,10 @@ class _Dylib(_SharedObjectBase):
             # (See https://github.com/aidansteele/osx-abi-macho-file-format-reference/blob/master/README.md#nlist_64)
             # We assume that if the N_TYPE is 0xe, the linkage is internal,
             # and that everything else comes from a shared library.
-            N_TYPE = 0x0e
+            N_TYPE = 0xE
             if _macho_sym.type & N_TYPE == N_TYPE:
-                return "hidden"
-            return "default"
+                return "local"
+            return "global"
 
         for macho in self._each_macho():
             symtab_cmd = next(
