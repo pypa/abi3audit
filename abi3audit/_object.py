@@ -216,7 +216,10 @@ class _Dll(_SharedObjectBase):
                     if imp.name is None:
                         logger.debug(f"weird: skipping import data entry without name: {imp}")
                         continue
-                    yield Symbol(imp.name.decode())
+                    # On Windows, all present symbols are also global -
+                    # that is, __declspec(dllexport) is equal to -fvisibility=hidden
+                    # plus __attribute__((visibility(default))).
+                    yield Symbol(imp.name.decode(), visibility="global")
 
 
 SharedObject = Union[_So, _Dll, _Dylib]
