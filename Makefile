@@ -43,7 +43,7 @@ dev: $(VENV_EXISTS)
 
 $(VENV_EXISTS): pyproject.toml
 	# Create our Python 3 virtual environment
-	python -m venv env
+	python -m venv $(VENV)
 	$(VENV_BIN)/python -m pip install --upgrade pip
 	$(VENV_BIN)/python -m pip install -e .[$(INSTALL_EXTRA)]
 
