@@ -119,6 +119,10 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                 if maybe_abi3.added > baseline:
                     future_abi3_objects.add(maybe_abi3)
             elif sym.name.startswith(("Py", "_Py")):
+                # exclude the shared object's entry point from reports.
+                # This is always PyInit_$EXTNAME, e.g. `PyInit_foo` for foo.abi3.so.
+                if sym.name == "PyInit_" + so.path.with_suffix("").stem:
+                    continue
                 # local symbols are fine, since they are inlined functions
                 # from the CPython limited API.
                 if sym not in _ALLOWED_SYMBOLS and sym.visibility != "local":
