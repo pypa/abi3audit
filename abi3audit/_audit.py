@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 # or stable ABI, but in practice always appear in ABI3-compatible code.
 # Since they are not listed in CPython's `stable_abi.toml`, we maintain them here separately.
 # For more information, see https://github.com/trailofbits/abi3audit/issues/85
-# and https://github.com/wjakob/nanobind/discussions/500.
-_ALLOWED_SYMBOL_NAMES: set[str] = {"Py_XDECREF"}
+# and https://github.com/wjakob/nanobind/discussions/500 .
+_ALLOWED_SYMBOLS: set[str] = {"Py_XDECREF"}
 
 
 class AuditError(Exception):
@@ -118,8 +118,14 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                     computed = maybe_abi3.added
                 if maybe_abi3.added > baseline:
                     future_abi3_objects.add(maybe_abi3)
-            elif sym.name.startswith("Py_") or sym.name.startswith("_Py_"):
-                if sym.name not in _ALLOWED_SYMBOL_NAMES:
+            elif sym.name.startswith(("Py", "_Py")):
+                # exclude the shared object's entry point from reports.
+                # This is always PyInit_$EXTNAME, e.g. `PyInit_foo` for foo.abi3.so.
+                if sym.name == "PyInit_" + so.path.with_suffix("").stem:
+                    continue
+                # local symbols are fine, since they are inlined functions
+                # from the CPython limited API.
+                if sym not in _ALLOWED_SYMBOLS and sym.visibility != "local":
                     non_abi3_symbols.add(sym)
     except Exception as exc:
         raise AuditError(f"failed to collect symbols in shared object: {exc}")

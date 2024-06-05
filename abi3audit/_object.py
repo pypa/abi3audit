@@ -7,10 +7,10 @@ from __future__ import annotations
 import logging
 import struct
 from collections.abc import Iterator
-from typing import Union
+from typing import Any, Union
 
 import pefile
-from abi3info.models import PyVersion, Symbol
+from abi3info.models import PyVersion, Symbol, Visibility
 from elftools.elf.elffile import ELFFile
 
 import abi3audit._extract as extract
@@ -74,6 +74,17 @@ class _So(_SharedObjectBase):
     """
 
     def __iter__(self) -> Iterator[Symbol]:
+        def get_visibility(_sym: Any) -> Visibility:
+            elfviz: str = _sym.entry.st_info.bind
+            if elfviz == "STB_LOCAL":
+                return "local"
+            elif elfviz == "STB_GLOBAL":
+                return "global"
+            elif elfviz == "STB_WEAK":
+                return "weak"
+            else:
+                raise TypeError(f"unexpected ELF visibility value {elfviz!r}")
+
         with self._extractor.path.open(mode="rb") as io, ELFFile(io) as elf:
             # The dynamic linker on Linux uses .dynsym, not .symtab, for
             # link editing and relocation. However, an extension that was
@@ -83,12 +94,12 @@ class _So(_SharedObjectBase):
             symtab = elf.get_section_by_name(".symtab")
             if symtab is not None:
                 for sym in symtab.iter_symbols():
-                    yield Symbol(sym.name)
+                    yield Symbol(sym.name, visibility=get_visibility(sym))
 
             dynsym = elf.get_section_by_name(".dynsym")
             if dynsym is not None:
                 for sym in dynsym.iter_symbols():
-                    yield Symbol(sym.name)
+                    yield Symbol(sym.name, visibility=get_visibility(sym))
 
 
 class _Dylib(_SharedObjectBase):
@@ -146,6 +157,22 @@ class _Dylib(_SharedObjectBase):
                         yield macho
 
     def __iter__(self) -> Iterator[Symbol]:
+        def get_visibility(_macho_sym: Any) -> Visibility:
+            # N_TYPE is the bitmask giving the Mach-O symbol type.
+            # Possible values are:
+            # 0x0 - symbol undefined, missing section field.
+            # 0x2 - symbol absolute, missing section field.
+            # 0xe - symbol defined in section type given by _macho_sym.sect
+            # 0xc - symbol undefined w/ prebound value, missing section field.
+            # 0xa - symbol is the same as the one found in table at index _macho_sym.value.
+            # (See https://github.com/aidansteele/osx-abi-macho-file-format-reference/blob/master/README.md#nlist_64)
+            # We assume that if the N_TYPE is 0xe, the linkage is internal,
+            # and that everything else comes from a shared library.
+            N_TYPE = 0xE
+            if _macho_sym.type & N_TYPE == N_TYPE:
+                return "local"
+            return "global"
+
         for macho in self._each_macho():
             symtab_cmd = next(
                 (
@@ -158,18 +185,20 @@ class _Dylib(_SharedObjectBase):
             if symtab_cmd is None:
                 raise SharedObjectError("shared object has no symbol table")
 
+            N_EXT = 0x01
             for symbol in symtab_cmd.symbols:
-                # TODO(ww): Do a better job of filtering here.
                 # The Mach-O symbol table includes all kinds of junk, including
-                # symbolic entries for debuggers. We should exclude all of
+                # symbolic entries for debuggers. We exclude all of
                 # these non-function/data entries, as well as any symbols
-                # that isn't marked as external (since we're linking against
+                # that are not marked as external (since we're linking against
                 # the Python interpreter for the ABI).
-                if (name := symbol.name) is None:
+                # A symbol is marked as external if the N_EXT (rightmost) bit
+                # of its `type` attribute is set.
+                if (name := symbol.name) is None or (symbol.type & N_EXT != N_EXT):
                     continue
 
                 # All symbols on macOS are prefixed with _; remove it.
-                yield Symbol(name[1:])
+                yield Symbol(name[1:], visibility=get_visibility(symbol))
 
 
 class _Dll(_SharedObjectBase):
@@ -187,7 +216,10 @@ class _Dll(_SharedObjectBase):
                     if imp.name is None:
                         logger.debug(f"weird: skipping import data entry without name: {imp}")
                         continue
-                    yield Symbol(imp.name.decode())
+                    # On Windows, all present symbols are also global -
+                    # that is, __declspec(dllexport) is equal to -fvisibility=hidden
+                    # plus __attribute__((visibility(default))).
+                    yield Symbol(imp.name.decode(), visibility="global")
 
 
 SharedObject = Union[_So, _Dll, _Dylib]
