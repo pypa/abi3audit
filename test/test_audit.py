@@ -11,7 +11,7 @@ import pytest
 import requests
 
 from abi3audit._audit import audit
-from abi3audit._extract import make_spec
+from abi3audit._extract import make_specs
 
 logger = logging.getLogger("abi3audit-tests")
 
@@ -107,7 +107,7 @@ def test_audit_results_on_golden_wheels(wheel):
     # downloads the wheels when finding the appropriate URLs in the HTML doc.
     wheel_downloader.feed(simple_cryptography_pypi_page.content.decode())
 
-    spec = make_spec(str(WHEELHOUSE / wheel.tag()))
+    spec = make_specs(str(WHEELHOUSE / wheel.tag()))[0]
     for so in spec._extractor():
         # a trimmed version of the loop in abi3audit._cli.main().
         result = audit(so)

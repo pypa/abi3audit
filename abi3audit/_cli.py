@@ -5,6 +5,7 @@ The `abi3audit` CLI.
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import logging
 import os
@@ -23,7 +24,7 @@ from abi3audit._extract import (
     PyPISpec,
     SharedObjectSpec,
     WheelSpec,
-    make_spec,
+    make_specs,
 )
 from abi3audit._object import SharedObject
 from abi3audit._state import console, status
@@ -173,7 +174,7 @@ def main() -> None:
     )
     parser.add_argument(
         "specs",
-        type=make_spec,
+        type=make_specs,
         metavar="SPEC",
         nargs="+",
         help="the files or other dependency specs to scan",
@@ -224,7 +225,7 @@ def main() -> None:
     results = SpecResults()
     all_passed = True
     with status:
-        for spec in set(args.specs):
+        for spec in itertools.chain.from_iterable(args.specs):
             status.update(f"auditing {spec}")
             try:
                 extractor = spec._extractor()

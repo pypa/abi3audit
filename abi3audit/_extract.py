@@ -4,6 +4,7 @@ Native extension extraction interfaces and implementations.
 
 from __future__ import annotations
 
+import glob
 import logging
 import re
 from collections.abc import Iterator
@@ -88,21 +89,25 @@ class PyPISpec(str):
 Spec = Union[WheelSpec, SharedObjectSpec, PyPISpec]
 
 
-def make_spec(val: str) -> Spec:
+def make_specs(val: str) -> list[Spec]:
     """
-    Constructs a (minimally) valid `Spec` instance from the given input.
+    Constructs a (minimally) valid list of `Spec` instances from the given input.
     """
     if val.endswith(".whl"):
-        return WheelSpec(val)
+        # NOTE: Windows is notable for not supporting globs in its shells.
+        # If the user specifies a glob, expand it for them.
+        if "*" in val:
+            return [WheelSpec(s) for s in glob.glob(val)]
+        return [WheelSpec(val)]
     elif any(val.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
         # NOTE: We allow untagged shared objects when they're indirectly
         # audited (e.g. via an abi3 wheel), but not directly (since
         # without a tag here we don't know if it's abi3 at all).
         if ".abi3." not in val:
             raise InvalidSpec(f"'{val}' looks like a shared object but is not tagged as abi3")
-        return SharedObjectSpec(val)
+        return [SharedObjectSpec(val)]
     elif re.match(_DISTRIBUTION_NAME_RE, val, re.IGNORECASE):
-        return PyPISpec(val)
+        return [PyPISpec(val)]
     else:
         raise InvalidSpec(f"'{val}' does not look like a valid spec")
 
