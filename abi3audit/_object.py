@@ -74,7 +74,7 @@ class _So(_SharedObjectBase):
     """
 
     def __iter__(self) -> Iterator[Symbol]:
-        def get_visibility(_sym: Any) -> Visibility:
+        def get_visibility(_sym: Any) -> Visibility | None:
             elfviz: str = _sym.entry.st_info.bind
             if elfviz == "STB_LOCAL":
                 return "local"
@@ -83,7 +83,8 @@ class _So(_SharedObjectBase):
             elif elfviz == "STB_WEAK":
                 return "weak"
             else:
-                raise TypeError(f"unexpected ELF visibility value {elfviz!r}")
+                logger.warning(f"unexpected ELF visibility value {elfviz!r}")
+                return None
 
         with self._extractor.path.open(mode="rb") as io, ELFFile(io) as elf:
             # The dynamic linker on Linux uses .dynsym, not .symtab, for
