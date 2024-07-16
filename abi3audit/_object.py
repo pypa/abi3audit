@@ -73,10 +73,27 @@ class _So(_SharedObjectBase):
     An ELF-formatted shared object.
     """
 
+    def __init__(self, extractor: extract.SharedObjectExtractor):
+        super().__init__(extractor)
+
+        with self._extractor.path.open(mode="rb") as io, ELFFile(io) as elf:
+            # HACK: If the ELF contains a comment section, look for an indicator
+            # that the binary was produced by GCC. If so, we treat STB_LOOS
+            # as STB_GNU_UNIQUE, i.e. another kind of local symbol linkage.
+            comment = elf.get_section_by_name(".comment")
+            if comment is None:
+                logger.debug(f"{self._extractor.path} has no .comment")
+                self._loos_is_gnu_unique = False
+            else:
+                self._loos_is_gnu_unique = b"GCC" in comment.data()
+                logger.debug(f"{self._extractor.path} has .comment, {self._loos_is_gnu_unique=}")
+
     def __iter__(self) -> Iterator[Symbol]:
         def get_visibility(_sym: Any) -> Visibility | None:
             elfviz: str = _sym.entry.st_info.bind
             if elfviz == "STB_LOCAL":
+                return "local"
+            elif elfviz == "STB_LOOS" and self._loos_is_gnu_unique:
                 return "local"
             elif elfviz == "STB_GLOBAL":
                 return "global"
