@@ -100,7 +100,7 @@ class SpecResults:
 
         self._abi3_violation_counts[so] += len(result.non_abi3_symbols)
 
-    def summarize_extraction(self, extractor: Extractor, summary) -> str | None:
+    def summarize_extraction(self, extractor: Extractor, summary: bool) -> str | None:
         spec_results = self._results[extractor]
 
         if not spec_results:
