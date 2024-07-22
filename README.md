@@ -85,7 +85,7 @@ Top-level:
 
 <!-- @begin-abi3audit-help@ -->
 ```console
-usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] [-S]
+usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] [-s] [-S]
                  [--assume-minimum-abi3 ASSUME_MINIMUM_ABI3]
                  SPEC [SPEC ...]
 
@@ -104,6 +104,8 @@ options:
   -R, --report          generate a JSON report; uses --output
   -o OUTPUT, --output OUTPUT
                         the path to write the JSON report to (default: stdout)
+  -s, --summary         always output a summary even if there are no
+                        violations/ABI version mismatches
   -S, --strict          fail the entire audit if an individual audit step
                         fails
   --assume-minimum-abi3 ASSUME_MINIMUM_ABI3

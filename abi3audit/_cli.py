@@ -100,7 +100,7 @@ class SpecResults:
 
         self._abi3_violation_counts[so] += len(result.non_abi3_symbols)
 
-    def summarize_extraction(self, extractor: Extractor) -> str:
+    def summarize_extraction(self, extractor: Extractor, summary: bool) -> str | None:
         spec_results = self._results[extractor]
 
         if not spec_results:
@@ -108,11 +108,14 @@ class SpecResults:
 
         abi3_version_counts = sum(self._bad_abi3_version_counts[res.so] for res in spec_results)
         abi3_violations = sum(self._abi3_violation_counts[res.so] for res in spec_results)
-        return (
-            f":information_desk_person: {extractor}: {len(spec_results)} extensions scanned; "
-            f"{_colornum(abi3_version_counts)} ABI version mismatches and "
-            f"{_colornum(abi3_violations)} ABI violations found"
-        )
+        if summary or abi3_violations > 0 or abi3_version_counts > 0:
+            return (
+                f":information_desk_person: {extractor}: {len(spec_results)} extensions scanned; "
+                f"{_colornum(abi3_version_counts)} ABI version mismatches and "
+                f"{_colornum(abi3_violations)} ABI violations found"
+            )
+        else:
+            return None
 
     def json(self) -> dict[str, Any]:
         """
@@ -204,6 +207,12 @@ def main() -> None:
         help="the path to write the JSON report to (default: stdout)",
     )
     parser.add_argument(
+        "-s",
+        "--summary",
+        action="store_true",
+        help="always output a summary even if there are no violations/ABI version mismatches",
+    )
+    parser.add_argument(
         "-S",
         "--strict",
         action="store_true",
@@ -250,7 +259,9 @@ def main() -> None:
                 if not result and args.verbose:
                     console.log(result)
 
-            console.log(results.summarize_extraction(extractor))
+            log_message = results.summarize_extraction(extractor, args.summary)
+            if log_message:
+                console.log(log_message)
 
     if args.report:
         print(json.dumps(results.json()), file=args.output)
