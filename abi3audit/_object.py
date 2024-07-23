@@ -50,7 +50,7 @@ class _SharedObjectBase:
         # filename. This doesn't tell us anything about the specific abi3 version, so
         # we assume the lowest.
         if ".abi3" in self._extractor.path.suffixes:
-            logger.warning(
+            logger.debug(
                 "no wheel to infer abi3 version from; assuming (%s)",
                 assume_lowest,
             )
