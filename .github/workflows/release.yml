@@ -5,7 +5,7 @@ on:
 
 name: release
 
-permissions: {}  # All jobs define their needed permissions below.
+permissions: {} # All jobs define their needed permissions below.
 
 jobs:
   build:
@@ -37,8 +37,8 @@ jobs:
       - build
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Used to sign the release artifacts.
-      contents: write  # Used to attach signing artifacts to the release.
+      id-token: write # Used to sign the release artifacts.
+      contents: write # Used to attach signing artifacts to the release.
 
     steps:
       - name: Download distributions
@@ -59,7 +59,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Used to authenticate to PyPI via OIDC.
+      id-token: write # Used to authenticate to PyPI via OIDC.
 
     steps:
       - name: Download distributions
@@ -70,4 +70,3 @@ jobs:
 
       - name: publish
         uses: pypa/gh-action-pypi-publish@release/v1
-
