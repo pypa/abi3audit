@@ -5,6 +5,8 @@ on:
 
 name: release
 
+permissions: {} # All jobs define their needed permissions below.
+
 jobs:
   build:
     name: Build distributions
@@ -29,31 +31,42 @@ jobs:
           name: python-package-distributions
           path: dist/
 
+  sign-release:
+    name: Sign and attach signatures to GitHub release
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Used to sign the release artifacts.
+      contents: write # Used to attach signing artifacts to the release.
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: sign
+        uses: sigstore/gh-action-sigstore-python@v3.0.0
+        with:
+          inputs: ./dist/*.tar.gz ./dist/*.whl
+          release-signing-artifacts: true
+
   publish:
     name: upload distributions to PyPI
     needs:
       - build
     runs-on: ubuntu-latest
     permissions:
-      # Used to authenticate to PyPI via OIDC.
-      # Used to sign the release's artifacts with sigstore-python.
-      id-token: write
-
-      # Used to attach signing artifacts to the published release.
-      contents: write
+      id-token: write # Used to authenticate to PyPI via OIDC.
 
     steps:
-    - name: Download distributions
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
 
-    - name: publish
-      uses: pypa/gh-action-pypi-publish@release/v1
-
-    - name: sign
-      uses: sigstore/gh-action-sigstore-python@v3.0.0
-      with:
-        inputs: ./dist/*.tar.gz ./dist/*.whl
-        release-signing-artifacts: true
+      - name: publish
+        uses: pypa/gh-action-pypi-publish@release/v1
