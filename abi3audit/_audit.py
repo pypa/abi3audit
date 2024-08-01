@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # A handpicked exclusion list of symbols that are not strictly in the limited API
 # or stable ABI, but in practice always appear in ABI3-compatible code.
 # Since they are not listed in CPython's `stable_abi.toml`, we maintain them here separately.
-# For more information, see https://github.com/trailofbits/abi3audit/issues/85
+# For more information, see https://github.com/pypa/abi3audit/issues/85
 # and https://github.com/wjakob/nanobind/discussions/500 .
 _ALLOWED_SYMBOLS: set[str] = {"Py_XDECREF"}
 

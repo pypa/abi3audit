@@ -1,12 +1,12 @@
 # abi3audit
 
 <!--- @begin-badges@ --->
-[![Tests](https://github.com/trailofbits/abi3audit/actions/workflows/tests.yml/badge.svg)](https://github.com/trailofbits/abi3audit/actions/workflows/tests.yml)
+[![Tests](https://github.com/pypa/abi3audit/actions/workflows/tests.yml/badge.svg)](https://github.com/pypa/abi3audit/actions/workflows/tests.yml)
 [![PyPI version](https://badge.fury.io/py/abi3audit.svg)](https://pypi.org/project/abi3audit)
 [![Packaging status](https://repology.org/badge/tiny-repos/python:abi3audit.svg)](https://repology.org/project/python:abi3audit/versions)
 <!--- @end-badges@ --->
 
-*[Read our blog post about how we find bugs with `abi3audit`!](https://blog.trailofbits.com/2022/11/15/python-wheels-abi-abi3audit/)*
+*[Read the Trail of Bits blog post about how we find bugs with `abi3audit`!](https://blog.trailofbits.com/2022/11/15/python-wheels-abi-abi3audit/)*
 
 `abi3audit` scans Python extensions for `abi3` violations and inconsistencies.
 
@@ -14,6 +14,9 @@ It can scan individual (unpackaged) shared objects, packaged wheels, or entire
 package version histories.
 
 ![An animated demonstration of abi3audit in action](https://user-images.githubusercontent.com/3059210/194171233-a61a81d2-f2ed-4078-8988-903f996ba2e3.gif)
+
+This project is maintained in part by [Trail of Bits](https://trailofbits.com).
+This is not an official Trail of Bits product.
 
 ## Index
 
