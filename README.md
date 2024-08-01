@@ -1,7 +1,7 @@
 # abi3audit
 
 <!--- @begin-badges@ --->
-[![Tests](https://github.com/trailofbits/abi3audit/actions/workflows/tests.yml/badge.svg)](https://github.com/trailofbits/abi3audit/actions/workflows/tests.yml)
+[![Tests](https://github.com/pypa/abi3audit/actions/workflows/tests.yml/badge.svg)](https://github.com/pypa/abi3audit/actions/workflows/tests.yml)
 [![PyPI version](https://badge.fury.io/py/abi3audit.svg)](https://pypi.org/project/abi3audit)
 [![Packaging status](https://repology.org/badge/tiny-repos/python:abi3audit.svg)](https://repology.org/project/python:abi3audit/versions)
 <!--- @end-badges@ --->
