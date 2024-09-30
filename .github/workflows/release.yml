@@ -31,28 +31,6 @@ jobs:
           name: python-package-distributions
           path: dist/
 
-  sign-release:
-    name: Sign and attach signatures to GitHub release
-    needs:
-      - build
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write # Used to sign the release artifacts.
-      contents: write # Used to attach signing artifacts to the release.
-
-    steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: sign
-        uses: sigstore/gh-action-sigstore-python@v3.0.0
-        with:
-          inputs: ./dist/*.tar.gz ./dist/*.whl
-          release-signing-artifacts: true
-
   publish:
     name: upload distributions to PyPI
     needs:
@@ -70,3 +48,5 @@ jobs:
 
       - name: publish
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: true
