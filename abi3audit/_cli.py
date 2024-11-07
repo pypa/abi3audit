@@ -5,7 +5,6 @@ The `abi3audit` CLI.
 from __future__ import annotations
 
 import argparse
-import itertools
 import json
 import logging
 import os
