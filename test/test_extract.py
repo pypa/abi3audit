@@ -17,7 +17,7 @@ def test_make_spec():
     assert make_specs("foo") == [PyPISpec("foo")]
 
     # Shared objects need to be tagged with `.abi3`.
-    with pytest.raises(InvalidSpec):
+    with pytest.raises(InvalidSpec, match="'foo.so' must contain '.abi3.'"):
         make_specs("foo.so")
 
     # Anything that doesn't look like a wheel, shared object, or PyPI package fails.

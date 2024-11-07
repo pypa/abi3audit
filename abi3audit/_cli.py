@@ -5,7 +5,6 @@ The `abi3audit` CLI.
 from __future__ import annotations
 
 import argparse
-import itertools
 import json
 import logging
 import os
@@ -20,6 +19,7 @@ from rich.logging import RichHandler
 from abi3audit._audit import AuditError, AuditResult, audit
 from abi3audit._extract import (
     Extractor,
+    ExtractorError,
     InvalidSpec,
     PyPISpec,
     SharedObjectSpec,
@@ -177,7 +177,6 @@ def main() -> None:
     )
     parser.add_argument(
         "specs",
-        type=make_specs,
         metavar="SPEC",
         nargs="+",
         help="the files or other dependency specs to scan",
@@ -229,16 +228,24 @@ def main() -> None:
     if args.debug:
         logging.root.setLevel("DEBUG")
 
+    specs = []
+    for spec in args.specs:
+        try:
+            specs.extend(make_specs(spec))
+        except InvalidSpec as e:
+            console.log(f"[red]:thumbs_down: processing error: {e}")
+            sys.exit(1)
+
     logger.debug(f"parsed arguments: {args}")
 
     results = SpecResults()
     all_passed = True
     with status:
-        for spec in itertools.chain.from_iterable(args.specs):
+        for spec in specs:
             status.update(f"auditing {spec}")
             try:
                 extractor = spec._extractor()
-            except InvalidSpec as e:
+            except ExtractorError as e:
                 console.log(f"[red]:thumbs_down: processing error: {e}")
                 sys.exit(1)
 

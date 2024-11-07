@@ -104,7 +104,7 @@ def make_specs(val: str) -> list[Spec]:
         # audited (e.g. via an abi3 wheel), but not directly (since
         # without a tag here we don't know if it's abi3 at all).
         if ".abi3." not in val:
-            raise InvalidSpec(f"'{val}' looks like a shared object but is not tagged as abi3")
+            raise InvalidSpec(f"'{val}' must contain '.abi3.' to be recognized as a shared object")
         return [SharedObjectSpec(val)]
     elif re.match(_DISTRIBUTION_NAME_RE, val, re.IGNORECASE):
         return [PyPISpec(val)]
