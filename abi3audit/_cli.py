@@ -20,6 +20,7 @@ from rich.logging import RichHandler
 from abi3audit._audit import AuditError, AuditResult, audit
 from abi3audit._extract import (
     Extractor,
+    ExtractorError,
     InvalidSpec,
     PyPISpec,
     SharedObjectSpec,
@@ -238,7 +239,7 @@ def main() -> None:
             status.update(f"auditing {spec}")
             try:
                 extractor = spec._extractor()
-            except InvalidSpec as e:
+            except ExtractorError as e:
                 console.log(f"[red]:thumbs_down: processing error: {e}")
                 sys.exit(1)
 
