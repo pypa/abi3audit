@@ -13,6 +13,7 @@ from tempfile import TemporaryDirectory
 from typing import Union
 from zipfile import ZipFile
 
+from abi3info.models import PyVersion
 from packaging import utils
 from packaging.tags import Tag
 
@@ -89,7 +90,7 @@ class PyPISpec(str):
 Spec = Union[WheelSpec, SharedObjectSpec, PyPISpec]
 
 
-def make_specs(val: str) -> list[Spec]:
+def make_specs(val: str, assume_minimum_abi3: PyVersion = None) -> list[Spec]:
     """
     Constructs a (minimally) valid list of `Spec` instances from the given input.
     """
@@ -101,10 +102,13 @@ def make_specs(val: str) -> list[Spec]:
         return [WheelSpec(val)]
     elif any(val.endswith(suf) for suf in _SHARED_OBJECT_SUFFIXES):
         # NOTE: We allow untagged shared objects when they're indirectly
-        # audited (e.g. via an abi3 wheel), but not directly (since
-        # without a tag here we don't know if it's abi3 at all).
-        if ".abi3." not in val:
-            raise InvalidSpec(f"'{val}' must contain '.abi3.' to be recognized as a shared object")
+        # audited (e.g. via an abi3 wheel), but when auditing them directly we
+        # only allow them if we have a minimum abi3 version to check against.
+        if assume_minimum_abi3 is None and ".abi3." not in val:
+            raise InvalidSpec(
+                f"'{val}' must contain '.abi3.' to be recognized as a shared "
+                + "object or assumed minimum ABI3 version must be specified"
+            )
         return [SharedObjectSpec(val)]
     elif re.match(_DISTRIBUTION_NAME_RE, val, re.IGNORECASE):
         return [PyPISpec(val)]

@@ -32,7 +32,7 @@ class _SharedObjectBase:
         self._extractor = extractor
         self.path = self._extractor.path
 
-    def abi3_version(self, assume_lowest: PyVersion = PyVersion(3, 2)) -> PyVersion | None:
+    def abi3_version(self, assume_lowest: PyVersion) -> PyVersion | None:
         # If we're dealing with a shared object that was extracted from a wheel,
         # we try and suss out the abi3 version from the wheel's own tags.
         if self._extractor.parent is not None:
@@ -50,14 +50,18 @@ class _SharedObjectBase:
         # filename. This doesn't tell us anything about the specific abi3 version, so
         # we assume the lowest.
         if ".abi3" in self._extractor.path.suffixes:
+            if assume_lowest is None:
+                assume_lowest = PyVersion(3, 2)
+
             logger.debug(
                 "no wheel to infer abi3 version from; assuming (%s)",
                 assume_lowest,
             )
             return assume_lowest
 
-        # With no wheel tags and no filename tag, we have nothing to go on.
-        return None
+        # With no wheel tags and no filename tag, fall back on the assumed ABI
+        # version (which is possibly None).
+        return assume_lowest
 
     def __str__(self) -> str:
         parents = []
