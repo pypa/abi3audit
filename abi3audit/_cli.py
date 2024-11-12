@@ -220,7 +220,6 @@ def main() -> None:
     parser.add_argument(
         "--assume-minimum-abi3",
         action=_PyVersionAction,
-        default=PyVersion(3, 2),
         help="assumed abi3 version (3.x, with x>=2) if it cannot be detected",
     )
     args = parser.parse_args()
@@ -231,7 +230,7 @@ def main() -> None:
     specs = []
     for spec in args.specs:
         try:
-            specs.extend(make_specs(spec))
+            specs.extend(make_specs(spec, assume_minimum_abi3=args.assume_minimum_abi3))
         except InvalidSpec as e:
             console.log(f"[red]:thumbs_down: processing error: {e}")
             sys.exit(1)
