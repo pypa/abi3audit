@@ -227,12 +227,10 @@ def main() -> None:
     if args.debug:
         logging.root.setLevel("DEBUG")
 
-    assume_minimum_abi3 = args.assume_minimum_abi3
-
     specs = []
     for spec in args.specs:
         try:
-            specs.extend(make_specs(spec, assume_minimum_abi3))
+            specs.extend(make_specs(spec, assume_minimum_abi3=args.assume_minimum_abi3))
         except InvalidSpec as e:
             console.log(f"[red]:thumbs_down: processing error: {e}")
             sys.exit(1)
@@ -254,7 +252,7 @@ def main() -> None:
                 status.update(f"{spec}: auditing {so}")
 
                 try:
-                    result = audit(so, assume_minimum_abi3)
+                    result = audit(so, assume_minimum_abi3=args.assume_minimum_abi3)
                     all_passed = all_passed and bool(result)
                 except AuditError as exc:
                     # TODO(ww): Refine exceptions and error states here.
