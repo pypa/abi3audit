@@ -18,6 +18,7 @@ from packaging import utils
 from packaging.tags import Tag
 
 import abi3audit._object as _object
+from abi3audit import __version__
 from abi3audit._cache import caching_session
 from abi3audit._state import console, status
 
@@ -216,14 +217,15 @@ class PyPIExtractor:
         self.spec = spec
         self.parent = None
         self._session = caching_session()
+        self._session.headers.update(
+            {"Accept-Encoding": "gzip", "User-Agent": f"abi3audit/{__version__}"}
+        )
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
         status.update(f"{self}: querying PyPI")
 
         # TODO: Error handling for this request.
-        resp = self._session.get(
-            f"https://pypi.org/pypi/{self.spec}/json", headers={"Accept-Encoding": "gzip"}
-        )
+        resp = self._session.get(f"https://pypi.org/pypi/{self.spec}/json")
 
         if not resp.ok:
             console.log(f"[red]:skull: {self}: PyPI returned {resp.status_code}")
