@@ -29,6 +29,8 @@ from abi3audit._extract import (
 from abi3audit._object import SharedObject
 from abi3audit._state import console, status
 
+from . import __version__
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper(),
@@ -175,6 +177,7 @@ def main() -> None:
         prog="abi3audit",
         description="Scans Python extensions for abi3 violations and inconsistencies",
     )
+    parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(
         "specs",
         metavar="SPEC",
