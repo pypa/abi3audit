@@ -11,7 +11,7 @@ from typing import Literal
 from rich.console import Console
 
 
-class Status(object):
+class Status:
     def __init__(self, console: Console):
         self._console = console
         self._status = None
