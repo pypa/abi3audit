@@ -88,7 +88,7 @@ Top-level:
 
 <!-- @begin-abi3audit-help@ -->
 ```console
-usage: abi3audit [-h] [--debug] [-v] [-R] [-o OUTPUT] [-s] [-S]
+usage: abi3audit [-h] [-V] [--debug] [-v] [-R] [-o OUTPUT] [-s] [-S]
                  [--assume-minimum-abi3 ASSUME_MINIMUM_ABI3]
                  SPEC [SPEC ...]
 
@@ -99,6 +99,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
   --debug               emit debug statements; this setting also overrides
                         `ABI3AUDIT_LOGLEVEL` and is equivalent to setting it
                         to `debug`

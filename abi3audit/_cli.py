@@ -16,6 +16,7 @@ from abi3info.models import PyVersion
 from rich import traceback
 from rich.logging import RichHandler
 
+from abi3audit import __version__
 from abi3audit._audit import AuditError, AuditResult, audit
 from abi3audit._extract import (
     Extractor,
@@ -28,8 +29,6 @@ from abi3audit._extract import (
 )
 from abi3audit._object import SharedObject
 from abi3audit._state import console, status
-
-from . import __version__
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
