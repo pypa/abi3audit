@@ -29,6 +29,8 @@ from abi3audit._extract import (
 from abi3audit._object import SharedObject
 from abi3audit._state import console, status
 
+from . import __version__
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=os.environ.get("ABI3AUDIT_LOGLEVEL", "INFO").upper(),
@@ -175,21 +177,14 @@ def main() -> None:
         prog="abi3audit",
         description="Scans Python extensions for abi3 violations and inconsistencies",
     )
-    version_group = parser.add_argument_group()
-    version_group.add_argument(
-        "-V",
-        "--version",
-        action="store_true",
-        help="show abi3audit version information",
-    )
-    main_group = parser.add_argument_group("main arguments")
-    main_group.add_argument(
+    parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
         "specs",
         metavar="SPEC",
-        nargs="*",
+        nargs="+",
         help="the files or other dependency specs to scan",
     )
-    main_group.add_argument(
+    parser.add_argument(
         "--debug",
         action="store_true",
         help=(
@@ -197,49 +192,40 @@ def main() -> None:
             "is equivalent to setting it to `debug`"
         ),
     )
-    main_group.add_argument(
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         help=("give more output, including pretty-printed results for each audit step"),
     )
-    main_group.add_argument(
+    parser.add_argument(
         "-R", "--report", action="store_true", help="generate a JSON report; uses --output"
     )
-    main_group.add_argument(
+    parser.add_argument(
         "-o",
         "--output",
         type=argparse.FileType("w"),
         default=sys.stdout,
         help="the path to write the JSON report to (default: stdout)",
     )
-    main_group.add_argument(
+    parser.add_argument(
         "-s",
         "--summary",
         action="store_true",
         help="always output a summary even if there are no violations/ABI version mismatches",
     )
-    main_group.add_argument(
+    parser.add_argument(
         "-S",
         "--strict",
         action="store_true",
         help="fail the entire audit if an individual audit step fails",
     )
-    main_group.add_argument(
+    parser.add_argument(
         "--assume-minimum-abi3",
         action=_PyVersionAction,
         help="assumed abi3 version (3.x, with x>=2) if it cannot be detected",
     )
     args = parser.parse_args()
-
-    if args.version:
-        from . import __version__
-
-        print(f"abi3audit {__version__}")
-        sys.exit(0)
-    else:
-        if len(args.specs) == 0:
-            console.log("[red]:thumbs_down: no input specs")
 
     if args.debug:
         logging.root.setLevel("DEBUG")
