@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import os
 import sys
-from typing import Any, Literal, Optional, Type
 from types import TracebackType
+from typing import Any, Literal
 
 from rich.console import Console
 from rich.status import Status
@@ -15,6 +15,7 @@ from rich.status import Status
 
 class StatusWrapper:
     _status: Status | None
+
     def __init__(self, console: Console) -> None:
         self._console = console
         self._status = None
@@ -26,9 +27,9 @@ class StatusWrapper:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> Any:
         if self._status:
             return self._status.__exit__(exc_type, exc_val, exc_tb)
