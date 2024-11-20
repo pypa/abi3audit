@@ -10,19 +10,24 @@ from typing import Literal
 
 from rich.console import Console
 
+
 class Status(object):
     def __init__(self, console: Console):
         self._console = console
         self._status = None
+
     def __enter__(self):
         if self._status:
             self._status.__enter__()
         return self
+
     def __exit__(self, *args):
         if self._status:
             self._status.__exit__(*args)
+
     def initiate(self):
         self._status = self._console.status("[green]Processing inputs", spinner="clock")
+
     def update(self, s: str):
         if self._status:
             self._status.update(s)
