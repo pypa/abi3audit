@@ -267,7 +267,7 @@ def main() -> None:
                 if not result and args.verbose:
                     console.log(result)
 
-            log_message = results.summarize_extraction(extractor, args.summary)
+            log_message = results.summarize_extraction(extractor, args.summary or args.verbose)
             if log_message:
                 console.log(log_message)
 
