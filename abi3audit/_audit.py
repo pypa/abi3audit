@@ -61,27 +61,30 @@ class AuditResult:
         return self.is_abi3() and self.is_abi3_baseline_compatible()
 
     def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
-        # Violating abi3 entirely is more "serious" than having the wrong abi3
-        # version, so we check for it first when deciding the Rich representation.
-        if self.non_abi3_symbols:
-            yield f"[red]:thumbs_down: [green]{self.so}[/green] has non-ABI3 symbols"
+        """
+        The rich representation of an audit result.
 
-            table = Table()
-            table.add_column("Symbol")
-            for sym in self.non_abi3_symbols:
-                table.add_row(sym.name)
+        If problems are found, renders a table of ABI3 violations/mismatches with
+        the name and ABI3 version (or a "not ABI3" marker) of each offending symbol.
 
-            yield table
-        elif self.computed > self.baseline:
-            yield (
-                f"[yellow]:thumbs_down: [green]{self.so}[/green] uses the Python "
-                f"[blue]{self.computed}[/blue] ABI, but is tagged for the Python "
-                f"[red]{self.baseline}[/red] ABI"
-            )
-
+        If no problems are found, renders a short "OK" message.
+        """
+        has_violations = self.non_abi3_symbols or self.computed > self.baseline
+        if has_violations:
             table = Table()
             table.add_column("Symbol")
             table.add_column("Version")
+
+            if self.non_abi3_symbols:
+                yield f"[red]:thumbs_down: [green]{self.so}[/green] has non-ABI3 symbols"
+            if self.computed > self.baseline:
+                yield (
+                    f"[yellow]:thumbs_down: [green]{self.so}[/green] uses the Python "
+                    f"[blue]{self.computed}[/blue] ABI, but is tagged for the Python "
+                    f"[red]{self.baseline}[/red] ABI"
+                )
+            for sym in self.non_abi3_symbols:
+                table.add_row(sym.name, "not ABI3")
             for obj in self.future_abi3_objects:
                 table.add_row(obj.symbol.name, str(obj.added))
             yield table
