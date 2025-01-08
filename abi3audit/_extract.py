@@ -10,12 +10,14 @@ import re
 from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Union
+from typing import Any, Union
 from zipfile import ZipFile
 
 from abi3info.models import PyVersion
 from packaging import utils
+from packaging.specifiers import SpecifierSet
 from packaging.tags import Tag
+from packaging.version import VERSION_PATTERN, Version
 
 import abi3audit._object as _object
 from abi3audit import __version__
@@ -24,7 +26,10 @@ from abi3audit._state import console, status
 
 logger = logging.getLogger(__name__)
 
-_DISTRIBUTION_NAME_RE = r"^([A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])$"
+_DISTRIBUTION_NAME_RE = r"^(?P<package>[A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])"
+_OPERATORS_RE = r"(~=|==|!=|<=|>=|<|>|===)"
+# operator and version number are allowed only together, hence the extra group.
+_FULL_PYPI_RE = _DISTRIBUTION_NAME_RE + "(" + _OPERATORS_RE + VERSION_PATTERN + ")?$"
 _SHARED_OBJECT_SUFFIXES = [".so", ".pyd"]
 
 
@@ -111,7 +116,7 @@ def make_specs(val: str, assume_minimum_abi3: PyVersion | None = None) -> list[S
                 "does not contain '.abi3.' infix"
             )
         return [SharedObjectSpec(val)]
-    elif re.match(_DISTRIBUTION_NAME_RE, val, re.IGNORECASE):
+    elif re.match(_FULL_PYPI_RE, val, re.VERBOSE | re.IGNORECASE):
         return [PyPISpec(val)]
     else:
         raise InvalidSpec(
@@ -222,10 +227,24 @@ class PyPIExtractor:
         )
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
+        # PyPI specs look like <PKG><OP><VERSION>,
+        # where <PKG> is any valid package name,
+        # <OP> is exactly one of ~=, ==, !=, <=, >=, <, >, ===,
+        # and <VERSION> is a package version as specified in
+        # https://packaging.python.org/en/latest/specifications/version-specifiers.
+        # TODO (nicholasjng): Allow version ranges, i.e. comma-separated
+        #  <OP><VERSION> pairs, like numpy>=1.3.0, <2.
+        match = re.match(_FULL_PYPI_RE, self.spec, re.VERBOSE | re.IGNORECASE)
+        if match is None:
+            raise ValueError(f"unknown package {self.spec}")
+
+        package = match["package"]
+        specifier_set = SpecifierSet(self.spec[len(package) :])
+
         status.update(f"{self}: querying PyPI")
 
         # TODO: Error handling for this request.
-        resp = self._session.get(f"https://pypi.org/pypi/{self.spec}/json")
+        resp = self._session.get(f"https://pypi.org/pypi/{package}/json")
 
         if not resp.ok:
             console.log(f"[red]:skull: {self}: PyPI returned {resp.status_code}")
@@ -235,13 +254,16 @@ class PyPIExtractor:
         body = resp.json()
 
         status.update(f"{self}: collecting distributions from PyPI")
-        releases = body.get("releases")
+        releases: dict[str, Any] = body.get("releases")
         if not releases:
             console.log(f"[red]:confused: {self}: no releases on PyPI")
             yield from ()
             return
 
-        for dists in releases.values():
+        for v, dists in releases.items():
+            if Version(v) not in specifier_set:
+                continue
+
             for dist in dists:
                 # If it's not a wheel, we can't audit it.
                 if not dist["filename"].endswith(".whl"):
