@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import glob
 import logging
-import re
 from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -15,9 +14,8 @@ from zipfile import ZipFile
 
 from abi3info.models import PyVersion
 from packaging import utils
-from packaging.specifiers import SpecifierSet
+from packaging.requirements import InvalidRequirement, Requirement
 from packaging.tags import Tag
-from packaging.version import VERSION_PATTERN, Version
 
 import abi3audit._object as _object
 from abi3audit import __version__
@@ -26,10 +24,6 @@ from abi3audit._state import console, status
 
 logger = logging.getLogger(__name__)
 
-_DISTRIBUTION_NAME_RE = r"^(?P<package>[A-Z0-9]|[A-Z0-9][A-Z0-9._-]*[A-Z0-9])"
-_OPERATORS_RE = r"(~=|==|!=|<=|>=|<|>|===)"
-# operator and version number are allowed only together, hence the extra group.
-_FULL_PYPI_RE = _DISTRIBUTION_NAME_RE + "(" + _OPERATORS_RE + VERSION_PATTERN + ")?$"
 _SHARED_OBJECT_SUFFIXES = [".so", ".pyd"]
 
 
@@ -112,16 +106,18 @@ def make_specs(val: str, assume_minimum_abi3: PyVersion | None = None) -> list[S
         # only allow them if we have a minimum abi3 version to check against.
         if assume_minimum_abi3 is None and ".abi3." not in val:
             raise InvalidSpec(
-                "--assume-minimum-abi3 must be used when extension "
-                "does not contain '.abi3.' infix"
+                "--assume-minimum-abi3 must be used when extension does not contain '.abi3.' infix"
             )
         return [SharedObjectSpec(val)]
-    elif re.match(_FULL_PYPI_RE, val, re.VERBOSE | re.IGNORECASE):
-        return [PyPISpec(val)]
     else:
-        raise InvalidSpec(
-            f"'{val}' does not look like a valid wheel, shared object, or package name"
-        )
+        try:
+            _ = Requirement(val)
+            return [PyPISpec(val)]
+        except InvalidRequirement as e:
+            raise InvalidSpec(
+                f"'{val}' does not look like a valid wheel, shared object, or package name\n"
+                f"hint: {e}"
+            )
 
 
 class ExtractorError(ValueError):
@@ -227,19 +223,10 @@ class PyPIExtractor:
         )
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
-        # PyPI specs look like <PKG><OP><VERSION>,
-        # where <PKG> is any valid package name,
-        # <OP> is exactly one of ~=, ==, !=, <=, >=, <, >, ===,
-        # and <VERSION> is a package version as specified in
-        # https://packaging.python.org/en/latest/specifications/version-specifiers.
-        # TODO (nicholasjng): Allow version ranges, i.e. comma-separated
-        #  <OP><VERSION> pairs, like numpy>=1.3.0, <2.
-        match = re.match(_FULL_PYPI_RE, self.spec, re.VERBOSE | re.IGNORECASE)
-        if match is None:
-            raise ValueError(f"unknown package {self.spec}")
-
-        package = match["package"]
-        specifier_set = SpecifierSet(self.spec[len(package) :])
+        # if we get here, we already know it's a valid requirement.
+        requirement = Requirement(self.spec)
+        package = requirement.name
+        specifier_set = requirement.specifier
 
         status.update(f"{self}: querying PyPI")
 
@@ -261,7 +248,7 @@ class PyPIExtractor:
             return
 
         for v, dists in releases.items():
-            if Version(v) not in specifier_set:
+            if v not in specifier_set:
                 continue
 
             for dist in dists:

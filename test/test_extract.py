@@ -26,7 +26,7 @@ def test_make_spec():
 
     # Anything that doesn't look like a wheel, shared object, or PyPI package fails.
     with pytest.raises(InvalidSpec):
-        make_specs("foo@foo")
+        make_specs("foo?")
 
 
 class TestWheelExtractor:
