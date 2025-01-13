@@ -5,6 +5,7 @@ Native extension extraction interfaces and implementations.
 from __future__ import annotations
 
 import glob
+import hashlib
 import logging
 from collections.abc import Iterator
 from pathlib import Path
@@ -282,8 +283,19 @@ class PyPIExtractor:
 
                 status.update(f"{self}: {dist['filename']}: retrieving wheel")
                 resp = self._session.get(dist["url"])
+                checksum = dist["digests"]["sha256"]
                 with TemporaryDirectory() as td:
+                    _hash = hashlib.sha256(usedforsecurity=False)
                     wheel_path = Path(td) / dist["filename"]
+                    _hash.update(resp.content)
+                    _hexdigest = _hash.hexdigest()
+                    if _hexdigest != checksum:
+                        console.log(
+                            f"[yellow]:warning: skipping audit of {dist['filename']}: "
+                            f"checksum mismatch (expected sha256-{checksum}, "
+                            f"got sha256-{_hexdigest})"
+                        )
+                        continue
                     wheel_path.write_bytes(resp.content)
 
                     child = WheelExtractor(WheelSpec(wheel_path), parent=self)
