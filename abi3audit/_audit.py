@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 _ALLOWED_SYMBOLS: set[str] = {
     "Py_XDECREF",  # not stable ABI, but defined as static inline in limited API
     "Py_TYPE",  # static inline before 3.14, stable ABI since 3.14
+    "Py_REFCNT",  # macro before 3.11, static inline before 3.14, stable ABI since 3.14
 }
 
 
