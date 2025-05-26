@@ -23,7 +23,11 @@ logger = logging.getLogger(__name__)
 # Since they are not listed in CPython's `stable_abi.toml`, we maintain them here separately.
 # For more information, see https://github.com/pypa/abi3audit/issues/85
 # and https://github.com/wjakob/nanobind/discussions/500 .
-_ALLOWED_SYMBOLS: set[str] = {"Py_XDECREF"}
+_ALLOWED_SYMBOLS: set[str] = {
+    "Py_XDECREF",  # not stable ABI, but defined as static inline in limited API
+    "Py_TYPE",  # static inline before 3.14, stable ABI since 3.14
+    "Py_REFCNT",  # macro before 3.11, static inline before 3.14, stable ABI since 3.14
+}
 
 
 class AuditError(Exception):
