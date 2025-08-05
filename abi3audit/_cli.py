@@ -130,15 +130,13 @@ class SpecResults:
             return {"name": results[0].so.path.name, "result": results[0].json()}
 
         def _one_wheel(results: list[AuditResult]) -> list[dict[str, Any]]:
-            sos = []
-            for result in results:
-                sos.append(
-                    {
-                        "name": result.so.path.name,
-                        "result": result.json(),
-                    }
-                )
-            return sos
+            return [
+                {
+                    "name": result.so.path.name,
+                    "result": result.json(),
+                }
+                for result in results
+            ]
 
         def _one_package(results: list[AuditResult]) -> dict[str, Any]:
             sos_by_wheel = defaultdict(list)
