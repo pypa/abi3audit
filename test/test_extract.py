@@ -22,7 +22,7 @@ def test_make_spec():
     with pytest.raises(InvalidSpec, match="--assume-minimum-abi3"):
         make_specs("foo.so")
 
-    make_specs("foo.so", assume_minimum_abi3=PyVersion(3, 2)) == [SharedObjectSpec("foo.so")]
+    assert make_specs("foo.so", assume_minimum_abi3=PyVersion(3, 2)) == [SharedObjectSpec("foo.so")]
 
     # Anything that doesn't look like a wheel, shared object, or PyPI package fails.
     with pytest.raises(InvalidSpec):
