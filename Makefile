@@ -1,7 +1,7 @@
 PY_MODULE := abi3audit
 
 # Optionally overriden by the user, if they're using a virtual environment manager.
-VENV ?= env
+VENV ?= .venv
 VENV_EXISTS := $(VENV)/pyvenv.cfg
 
 # On Windows, venv scripts/shims are under `Scripts` instead of `bin`.
