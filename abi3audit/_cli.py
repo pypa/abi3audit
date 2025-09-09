@@ -227,6 +227,9 @@ def main() -> None:
     if args.debug:
         logging.root.setLevel("DEBUG")
 
+    if args.verbose:
+        status.initiate()
+
     specs = []
     for spec in args.specs:
         try:
