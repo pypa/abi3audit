@@ -7,14 +7,14 @@ from abi3audit._audit import audit
 
 @dataclass(frozen=True, unsafe_hash=True)
 class SharedObject:
-    assume: PyVersion
-    computed: PyVersion
     symbols: Iterator[Symbol]
+    baseline: PyVersion
+    computed: PyVersion
     future_abi3_objects: Iterator[Function] = field(default_factory=list)
     non_abi3_symbols: Iterator[Symbol] = field(default_factory=list)
 
     def abi3_version(self, assume_lowest) -> PyVersion:
-        return self.assume
+        return self.baseline
 
     def __iter__(self) -> Iterator[Symbol]:
         for symbol in self.symbols:
@@ -22,7 +22,7 @@ class SharedObject:
 
 shared_objects = [
   SharedObject(
-    assume = PyVersion(3, 10),
+    baseline = PyVersion(3, 10),
     computed = PyVersion(3, 10),
     symbols = [
       Symbol("PyType_GetModule", "global"),
@@ -32,7 +32,7 @@ shared_objects = [
     ],
   ),
   SharedObject(
-    assume = PyVersion(3, 9),
+    baseline = PyVersion(3, 9),
     computed = PyVersion(3, 10),
     symbols = [
       Symbol("PyType_GetModule", "global"),
@@ -45,7 +45,7 @@ shared_objects = [
     ],
   ),
   SharedObject(
-    assume = PyVersion(3, 9),
+    baseline = PyVersion(3, 9),
     computed = PyVersion(3, 14),
     symbols = [
       Symbol("PyType_GetModule", "global"),
@@ -58,7 +58,7 @@ shared_objects = [
     ],
   ),
   SharedObject(
-    assume = PyVersion(3, 9),
+    baseline = PyVersion(3, 9),
     computed = PyVersion(3, 10),
     symbols = [
       Symbol("PyType_GetModule", "global"),
@@ -78,7 +78,8 @@ shared_objects = [
     "so", shared_objects
 )
 def test_audit_result_unit_test(so):
-    result = audit(so, so.assume)
+    result = audit(so, so.baseline)
+    assert result.baseline == so.baseline
     assert result.computed == so.computed
-    assert list(result.future_abi3_objects) == so.future_abi3_objects
-    assert list(result.non_abi3_symbols) == so.non_abi3_symbols
+    assert result.future_abi3_objects == set(so.future_abi3_objects)
+    assert result.non_abi3_symbols == set(so.non_abi3_symbols)
