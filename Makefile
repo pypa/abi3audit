@@ -1,6 +1,6 @@
 PY_MODULE := abi3audit
 
-# Optionally overriden by the user, if they're using a virtual environment manager.
+# Optionally overridden by the user, if they're using a virtual environment manager.
 VENV ?= .venv
 VENV_EXISTS := $(VENV)/pyvenv.cfg
 
