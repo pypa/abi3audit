@@ -50,6 +50,8 @@ class WheelSpec(str):
     A wheel can contain multiple Python extensions, as shared objects.
     """
 
+    __slots__ = ()
+
     def _extractor(self) -> Extractor:
         """
         Returns an extractor for this wheel's shared objects.
@@ -63,6 +65,8 @@ class SharedObjectSpec(str):
 
     A shared object may or may not be a Python extension.
     """
+
+    __slots__ = ()
 
     def _extractor(self) -> Extractor:
         """
@@ -78,6 +82,8 @@ class PyPISpec(str):
     A package may have zero or more published wheels, of which zero or more
     may be tagged as abi3 compatible.
     """
+
+    __slots__ = ()
 
     def _extractor(self) -> Extractor:
         """
