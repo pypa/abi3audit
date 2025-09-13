@@ -135,7 +135,7 @@ class _Dylib(_SharedObjectBase):
         try:
             with mach_o.MachO.from_file(self._extractor.path) as macho:
                 yield macho
-        except Exception:
+        except Exception as exc:
             logger.debug(f"mach-o decode for {self._extractor.path} failed; trying as a fat mach-o")
             # To handle "fat" Mach-Os, we do some ad-hoc parsing below:
             # * Check that we're really in a fat Mach-O and, if
@@ -155,7 +155,7 @@ class _Dylib(_SharedObjectBase):
                     # Mach-O Fat headers, but they never appear in the wild.
                     raise SharedObjectError(
                         f"bad magic: {hex(magic)} (not FAT_MAGIC or FAT_MAGIC_64)"
-                    )
+                    ) from exc
 
                 (nfat_arch,) = struct.unpack(fieldspec[0], io.read(fieldspec[1]))
                 for _ in range(nfat_arch):
