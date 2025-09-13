@@ -17,8 +17,7 @@ from packaging import utils
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.tags import Tag
 
-import abi3audit._object as _object
-from abi3audit import __version__
+from abi3audit import __version__, _object
 from abi3audit._cache import caching_session
 from abi3audit._state import console, status
 
