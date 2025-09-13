@@ -25,8 +25,6 @@ logger = logging.getLogger(__name__)
 # and https://github.com/wjakob/nanobind/discussions/500 .
 _ALLOWED_SYMBOLS: set[str] = {
     "Py_XDECREF",  # not stable ABI, but defined as static inline in limited API
-    "Py_TYPE",  # static inline before 3.14, stable ABI since 3.14
-    "Py_REFCNT",  # macro before 3.11, static inline before 3.14, stable ABI since 3.14
 }
 
 
@@ -120,7 +118,9 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
             if maybe_abi3 is None:
                 maybe_abi3 = DATAS.get(sym)
 
-            if maybe_abi3 is not None:
+            if maybe_abi3 is not None and sym.visibility != "local":
+                # Local symbols are fine, since they are inlined functions
+                # from the CPython limited API.
                 if maybe_abi3.added > computed:
                     computed = maybe_abi3.added
                 if maybe_abi3.added > baseline:
@@ -134,7 +134,7 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                     continue
                 # Local symbols are fine, since they are inlined functions
                 # from the CPython limited API.
-                if sym not in _ALLOWED_SYMBOLS and sym.visibility != "local":
+                if sym.name not in _ALLOWED_SYMBOLS and sym.visibility != "local":
                     non_abi3_symbols.add(sym)
     except Exception as exc:
         raise AuditError(f"failed to collect symbols in shared object: {exc}")
