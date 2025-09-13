@@ -32,7 +32,7 @@ class _SharedObjectBase:
         self._extractor = extractor
         self.path = self._extractor.path
 
-    def abi3_version(self, assume_lowest: PyVersion) -> PyVersion | None:
+    def abi3_version(self, assume_lowest: PyVersion | None) -> PyVersion | None:
         # If we're dealing with a shared object that was extracted from a wheel,
         # we try and suss out the abi3 version from the wheel's own tags.
         if self._extractor.parent is not None:
