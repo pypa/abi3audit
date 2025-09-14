@@ -72,6 +72,8 @@ omit = ["abi3audit/_vendor/*"]
 
 [tool.ruff]
 line-length = 100
+exclude = ["abi3audit/_vendor"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP"]
+select = ["E", "F", "I", "W", "B", "A", "C4", "EXE", "FA", "ISC", "ICN", "LOG", "PIE", "PYI", "SLOT", "FLY", "PERF", "PGH", "PL", "FURB", "UP"]
+ignore = ["PLR1730", "PLR2004"]
