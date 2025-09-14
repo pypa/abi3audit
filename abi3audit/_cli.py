@@ -126,7 +126,7 @@ class SpecResults:
         # TODO(ww): These inner helpers could definitely be consolidated.
         def _one_object(results: list[AuditResult]) -> dict[str, Any]:
             # NOTE: Anything else indicates a logic error.
-            assert len(results) == 1
+            assert len(results) == 1  # noqa: S101
             return {"name": results[0].so.path.name, "result": results[0].json()}
 
         def _one_wheel(results: list[AuditResult]) -> list[dict[str, Any]]:
