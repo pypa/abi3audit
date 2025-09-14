@@ -40,8 +40,6 @@ class InvalidSpec(ValueError):
     specification into something that can be extracted.
     """
 
-    pass
-
 
 class WheelSpec(str):
     """
@@ -130,8 +128,6 @@ class ExtractorError(ValueError):
     Raised when abi3audit doesn't know how to (or can't) extract shared objects
     from the requested source.
     """
-
-    pass
 
 
 class WheelExtractor:
