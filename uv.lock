@@ -22,7 +22,6 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
-    { name = "bandit" },
     { name = "build" },
     { name = "coverage", extra = ["toml"] },
     { name = "interrogate" },
@@ -35,7 +34,6 @@ dev = [
     { name = "types-requests" },
 ]
 lint = [
-    { name = "bandit" },
     { name = "interrogate" },
     { name = "mypy" },
     { name = "ruff" },
@@ -52,7 +50,6 @@ test = [
 requires-dist = [
     { name = "abi3audit", extras = ["test", "lint"], marker = "extra == 'dev'" },
     { name = "abi3info", specifier = ">=2024.6.19" },
-    { name = "bandit", marker = "extra == 'lint'" },
     { name = "build", marker = "extra == 'dev'" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'test'" },
     { name = "interrogate", marker = "extra == 'lint'" },
@@ -89,21 +86,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/5a/b0/1367933a8532ee6ff8d63537de4f1177af4bff9f3e829baf7331f595bb24/attrs-25.3.0.tar.gz", hash = "sha256:75d7cefc7fb576747b2c81b4442d4d4a1ce0900973527c011d1030fd3bf4af1b", size = 812032, upload-time = "2025-03-13T11:10:22.779Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/77/06/bb80f5f86020c4551da315d78b3ab75e8228f89f0162f2c3a819e407941a/attrs-25.3.0-py3-none-any.whl", hash = "sha256:427318ce031701fea540783410126f03899a97ffc6f61596ad581ac2e40e3bc3", size = 63815, upload-time = "2025-03-13T11:10:21.14Z" },
-]
-
-[[package]]
-name = "bandit"
-version = "1.8.6"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
-    { name = "pyyaml" },
-    { name = "rich" },
-    { name = "stevedore" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/fb/b5/7eb834e213d6f73aace21938e5e90425c92e5f42abafaf8a6d5d21beed51/bandit-1.8.6.tar.gz", hash = "sha256:dbfe9c25fc6961c2078593de55fd19f2559f9e45b99f1272341f5b95dea4e56b", size = 4240271, upload-time = "2025-07-06T03:10:50.9Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/48/ca/ba5f909b40ea12ec542d5d7bdd13ee31c4d65f3beed20211ef81c18fa1f3/bandit-1.8.6-py3-none-any.whl", hash = "sha256:3348e934d736fcdb68b6aa4030487097e23a501adf3e7827b63658df464dddd0", size = 133808, upload-time = "2025-07-06T03:10:49.134Z" },
 ]
 
 [[package]]
