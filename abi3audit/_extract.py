@@ -117,7 +117,7 @@ def make_specs(val: str, assume_minimum_abi3: PyVersion | None = None) -> list[S
             raise InvalidSpec(
                 f"'{val}' does not look like a valid wheel, shared object, or package name\n"
                 f"hint: {e}"
-            )
+            ) from e
 
 
 class ExtractorError(ValueError):

@@ -137,6 +137,6 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                 if sym not in _ALLOWED_SYMBOLS and sym.visibility != "local":
                     non_abi3_symbols.add(sym)
     except Exception as exc:
-        raise AuditError(f"failed to collect symbols in shared object: {exc}")
+        raise AuditError(f"failed to collect symbols in shared object: {exc}") from exc
 
     return AuditResult(so, baseline, computed, non_abi3_symbols, future_abi3_objects)

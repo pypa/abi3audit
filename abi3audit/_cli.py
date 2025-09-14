@@ -71,7 +71,7 @@ class _PyVersionAction(argparse.Action):
         try:
             pyversion = self._ensure_pyversion(values)
         except ValueError as exc:
-            raise argparse.ArgumentError(self, str(exc))
+            raise argparse.ArgumentError(self, str(exc)) from exc
         setattr(namespace, self.dest, pyversion)
 
     @classmethod
@@ -79,8 +79,8 @@ class _PyVersionAction(argparse.Action):
         error_msg = f"must have syntax '3.x', with x>=2; you gave '{version}'"
         try:
             pyversion = PyVersion.parse_dotted(version)
-        except Exception:
-            raise ValueError(error_msg)
+        except Exception as exc:
+            raise ValueError(error_msg) from exc
         if pyversion.major != 3 or pyversion.minor < 2:
             raise ValueError(error_msg)
         return pyversion
