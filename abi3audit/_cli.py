@@ -228,12 +228,12 @@ def main() -> None:
         logging.root.setLevel("DEBUG")
 
     specs = []
-    for spec in args.specs:
-        try:
+    try:
+        for spec in args.specs:
             specs.extend(make_specs(spec, assume_minimum_abi3=args.assume_minimum_abi3))
-        except InvalidSpec as e:
-            console.log(f"[red]:thumbs_down: processing error: {e}")
-            sys.exit(1)
+    except InvalidSpec as e:
+        console.log(f"[red]:thumbs_down: processing error: {e}")
+        sys.exit(1)
 
     logger.debug(f"parsed arguments: {args}")
 
