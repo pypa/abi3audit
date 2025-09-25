@@ -40,8 +40,6 @@ class InvalidSpec(ValueError):
     specification into something that can be extracted.
     """
 
-    pass
-
 
 class WheelSpec(str):
     """
@@ -49,6 +47,8 @@ class WheelSpec(str):
 
     A wheel can contain multiple Python extensions, as shared objects.
     """
+
+    __slots__ = ()
 
     def _extractor(self) -> Extractor:
         """
@@ -64,6 +64,8 @@ class SharedObjectSpec(str):
     A shared object may or may not be a Python extension.
     """
 
+    __slots__ = ()
+
     def _extractor(self) -> Extractor:
         """
         Returns a "trivial" extractor for this shared object.
@@ -78,6 +80,8 @@ class PyPISpec(str):
     A package may have zero or more published wheels, of which zero or more
     may be tagged as abi3 compatible.
     """
+
+    __slots__ = ()
 
     def _extractor(self) -> Extractor:
         """
@@ -124,8 +128,6 @@ class ExtractorError(ValueError):
     Raised when abi3audit doesn't know how to (or can't) extract shared objects
     from the requested source.
     """
-
-    pass
 
 
 class WheelExtractor:
