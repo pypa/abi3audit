@@ -36,7 +36,7 @@ Source = "https://github.com/pypa/abi3audit"
 
 [project.optional-dependencies]
 test = ["pytest", "pytest-cov", "pretend", "coverage[toml]"]
-lint = ["bandit", "interrogate", "mypy", "ruff", "types-requests"]
+lint = ["interrogate", "mypy", "ruff", "types-requests"]
 dev = ["build", "pdoc3", "abi3audit[test,lint]"]
 
 [project.scripts]
@@ -64,14 +64,19 @@ warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
-[tool.bandit]
-exclude_dirs = ["./test"]
-
 [tool.coverage.run]
 omit = ["abi3audit/_vendor/*"]
 
 [tool.ruff]
 line-length = 100
+exclude = ["abi3audit/_vendor"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "UP"]
+select = ["E", "F", "I", "W", "S", "B", "A", "C4", "EXE", "FA", "ISC", "ICN", "LOG", "PIE", "PYI", "SLOT", "FLY", "PERF", "PGH", "PL", "FURB", "UP"]
+ignore = ["PLR1730", "PLR2004"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["abi3info.models.PyVersion"]
+
+[tool.ruff.lint.per-file-ignores]
+"test/**.py" = ["S101", "S113"]

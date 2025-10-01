@@ -59,8 +59,7 @@ class _SharedObjectBase:
             )
             return assume_lowest
 
-        # With no wheel tags and no filename tag, fall back on the assumed ABI
-        # version (which is possibly None).
+        # With no wheel tags and no filename tag, fall back on the assumed ABI version.
         return assume_lowest
 
     def __str__(self) -> str:

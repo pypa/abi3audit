@@ -126,7 +126,7 @@ class SpecResults:
         # TODO(ww): These inner helpers could definitely be consolidated.
         def _one_object(results: list[AuditResult]) -> dict[str, Any]:
             # NOTE: Anything else indicates a logic error.
-            assert len(results) == 1
+            assert len(results) == 1  # noqa: S101
             return {"name": results[0].so.path.name, "result": results[0].json()}
 
         def _one_wheel(results: list[AuditResult]) -> list[dict[str, Any]]:
@@ -228,12 +228,12 @@ def main() -> None:
         logging.root.setLevel("DEBUG")
 
     specs = []
-    for spec in args.specs:
-        try:
+    try:
+        for spec in args.specs:
             specs.extend(make_specs(spec, assume_minimum_abi3=args.assume_minimum_abi3))
-        except InvalidSpec as e:
-            console.log(f"[red]:thumbs_down: processing error: {e}")
-            sys.exit(1)
+    except InvalidSpec as e:
+        console.log(f"[red]:thumbs_down: processing error: {e}")
+        sys.exit(1)
 
     logger.debug(f"parsed arguments: {args}")
 
