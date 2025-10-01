@@ -75,5 +75,8 @@ exclude = ["abi3audit/_vendor"]
 select = ["E", "F", "I", "W", "S", "B", "A", "C4", "EXE", "FA", "ISC", "ICN", "LOG", "PIE", "PYI", "SLOT", "FLY", "PERF", "PGH", "PL", "FURB", "UP"]
 ignore = ["PLR1730", "PLR2004"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["abi3info.models.PyVersion"]
+
 [tool.ruff.lint.per-file-ignores]
 "test/**.py" = ["S101", "S113"]
