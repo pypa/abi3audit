@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import pytest
 from abi3info.models import Function, PyVersion, Symbol
 
+from abi3audit._audit import _ALLOWED_SYMBOLS as ALLOWED_SYMBOLS
 from abi3audit._audit import audit
 
 
@@ -81,12 +82,24 @@ shared_objects = [
             Symbol("Py_foo_bar", None),
         ],
     ),
+    SharedObject(
+        baseline=PyVersion(3, 10),
+        computed=PyVersion(3, 10),
+        symbols=[
+            Symbol("PyType_GetModule", "global"),
+            Symbol("Py_abi3audit_allowed_symbol", "global"),
+        ],
+    ),
 ]
 
 
 @pytest.mark.parametrize("so", shared_objects)
 def test_audit_result_unit_test(so):
-    result = audit(so, so.baseline)
+    ALLOWED_SYMBOLS.add("Py_abi3audit_allowed_symbol")
+    try:
+        result = audit(so, so.baseline)
+    finally:
+        ALLOWED_SYMBOLS.remove("Py_abi3audit_allowed_symbol")
     assert result.baseline == so.baseline
     assert result.computed == so.computed
     assert result.future_abi3_objects == set(so.future_abi3_objects)
