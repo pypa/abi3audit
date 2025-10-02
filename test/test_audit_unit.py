@@ -49,22 +49,13 @@ shared_objects = [
         ],
     ),
     SharedObject(
-        baseline=PyVersion(3, 10),
-        computed=PyVersion(3, 10),
-        symbols=[
-            Symbol("PyType_GetModule", "global"),
-            # This test is just to assert the existing behaviour. Py_XDECREF is never a global
-            # symbol and will always be local.
-            Symbol("Py_XDECREF", "global"),
-        ],
-    ),
-    SharedObject(
         baseline=PyVersion(3, 9),
         computed=PyVersion(3, 14),
         symbols=[
             Symbol("PyType_GetModule", "global"),
             Symbol("Py_TYPE", "global"),
             Symbol("Py_REFCNT", "local"),
+            Symbol("Py_XDECREF", "local"),
         ],
         future_abi3_objects=[
             Function(
