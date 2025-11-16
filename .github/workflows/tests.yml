@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         python:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
@@ -36,7 +35,7 @@ jobs:
   all-tests-pass:
     if: always()
     needs:
-    - test
+      - test
     runs-on: ubuntu-latest
     steps:
       - name: check test jobs
