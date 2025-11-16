@@ -84,39 +84,6 @@ abi3audit --help
 python -m abi3audit --help
 ```
 
-Top-level:
-
-<!-- @begin-abi3audit-help@ -->
-```console
-usage: abi3audit [-h] [-V] [--debug] [-v] [-R] [-o OUTPUT] [-s] [-S]
-                 [--assume-minimum-abi3 ASSUME_MINIMUM_ABI3]
-                 SPEC [SPEC ...]
-
-Scans Python extensions for abi3 violations and inconsistencies
-
-positional arguments:
-  SPEC                  the files or other dependency specs to scan
-
-options:
-  -h, --help            show this help message and exit
-  -V, --version         show program's version number and exit
-  --debug               emit debug statements; this setting also overrides
-                        `ABI3AUDIT_LOGLEVEL` and is equivalent to setting it
-                        to `debug`
-  -v, --verbose         give more output, including pretty-printed results for
-                        each audit step
-  -R, --report          generate a JSON report; uses --output
-  -o, --output OUTPUT   the path to write the JSON report to (default: stdout)
-  -s, --summary         always output a summary even if there are no
-                        violations/ABI version mismatches
-  -S, --strict          fail the entire audit if an individual audit step
-                        fails
-  --assume-minimum-abi3 ASSUME_MINIMUM_ABI3
-                        assumed abi3 version (3.x, with x>=2) if it cannot be
-                        detected
-```
-<!-- @end-abi3audit-help@ -->
-
 ### Examples
 
 Audit a single shared object, wheel, or PyPI package:
