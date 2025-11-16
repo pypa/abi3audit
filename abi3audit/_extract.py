@@ -9,7 +9,7 @@ import logging
 from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Union
+from typing import Any
 from zipfile import ZipFile
 
 from abi3info.models import PyVersion
@@ -90,7 +90,7 @@ class PyPISpec(str):
         return PyPIExtractor(self)
 
 
-Spec = Union[WheelSpec, SharedObjectSpec, PyPISpec]
+Spec = WheelSpec | SharedObjectSpec | PyPISpec
 
 
 def make_specs(val: str, assume_minimum_abi3: PyVersion | None = None) -> list[Spec]:
@@ -294,4 +294,4 @@ class PyPIExtractor:
         return self.spec
 
 
-Extractor = Union[WheelExtractor, SharedObjectExtractor, PyPIExtractor]
+Extractor = WheelExtractor | SharedObjectExtractor | PyPIExtractor

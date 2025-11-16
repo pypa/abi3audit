@@ -34,10 +34,10 @@ Homepage = "https://pypi.org/project/abi3audit/"
 Issues = "https://github.com/pypa/abi3audit/issues"
 Source = "https://github.com/pypa/abi3audit"
 
-[project.optional-dependencies]
+[dependency-groups]
 test = ["pytest", "pytest-cov", "pretend", "coverage[toml]"]
 lint = ["interrogate", "mypy", "ruff", "types-requests"]
-dev = ["build", "pdoc3", "abi3audit[test,lint]"]
+dev = [{ include-group = "test" }, { include-group = "lint" }]
 
 [project.scripts]
 abi3audit = "abi3audit._cli:main"
