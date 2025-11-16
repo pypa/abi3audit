@@ -3,10 +3,6 @@ PY_MODULE := abi3audit
 # Optionally overridden by the user in the `test` target.
 TESTS :=
 
-# Optionally overridden by the user/CI, to limit the installation to a specific
-# subset of development dependencies.
-INSTALL_EXTRA := dev
-
 # If the user selects a specific test pattern to run, set `pytest` to fail fast
 # and only run tests that match the pattern.
 # Otherwise, run all tests and enable coverage assertions, since we expect
