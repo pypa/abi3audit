@@ -1,24 +1,7 @@
 PY_MODULE := abi3audit
 
-# Optionally overridden by the user, if they're using a virtual environment manager.
-VENV ?= .venv
-VENV_EXISTS := $(VENV)/pyvenv.cfg
-
-# On Windows, venv scripts/shims are under `Scripts` instead of `bin`.
-VENV_BIN := $(VENV)/bin
-ifeq ($(OS),Windows_NT)
-	VENV_BIN := $(VENV)/Scripts
-endif
-
-ALL_PY_SRCS := $(shell find $(PY_MODULE) -name '*.py' -not -path '$(PY_MODULE)/_vendor/*') \
-	$(shell find test -name '*.py')
-
 # Optionally overridden by the user in the `test` target.
 TESTS :=
-
-# Optionally overridden by the user/CI, to limit the installation to a specific
-# subset of development dependencies.
-INSTALL_EXTRA := dev
 
 # If the user selects a specific test pattern to run, set `pytest` to fail fast
 # and only run tests that match the pattern.
@@ -39,46 +22,28 @@ all:
 	@echo "Run my targets individually!"
 
 .PHONY: dev
-dev: $(VENV_EXISTS)
-
-$(VENV_EXISTS): pyproject.toml
-	# Create our Python 3 virtual environment
-	python -m venv $(VENV)
-	$(VENV_BIN)/python -m pip install --upgrade pip
-	$(VENV_BIN)/python -m pip install -e .[$(INSTALL_EXTRA)]
+dev:
+	uv sync
 
 .PHONY: lint
-lint: $(VENV_EXISTS)
-	. $(VENV_BIN)/activate && \
-		ruff format --check $(ALL_PY_SRCS) && \
-		ruff check $(ALL_PY_SRCS) && \
-		mypy $(PY_MODULE)
-		# TODO: Enable.
-		# interrogate -c pyproject.toml .
+lint:
+	uv run --dev ruff format --check
+	uv run --dev ruff check
+	uv run --dev mypy $(PY_MODULE)
+	# TODO: Enable.
+	# interrogate -c pyproject.toml .
 
 .PHONY: format
-format: $(VENV_EXISTS)
-	. $(VENV_BIN)/activate && \
-		ruff check --fix $(ALL_PY_SRCS) && \
-		ruff format $(ALL_PY_SRCS)
+format:
+	uv run --dev ruff check --fix
+	uv run --dev ruff format
 
 .PHONY: test tests
-test tests: $(VENV_EXISTS)
-	. $(VENV_BIN)/activate && \
-		pytest --cov=$(PY_MODULE) $(T) $(TEST_ARGS) && \
-		python -m coverage report -m $(COV_ARGS)
-
-.PHONY: doc
-doc: $(VENV_EXISTS)
-	. $(VENV_BIN)/activate && \
-		command -v pdoc3 && \
-		PYTHONWARNINGS='error::UserWarning' pdoc --force --html $(PY_MODULE)
+test tests:
+	uv run --dev pytest --cov=$(PY_MODULE) $(T) $(TEST_ARGS)
+	uv run --dev python -m coverage report -m $(COV_ARGS)
 
 .PHONY: dist
-dist: $(VENV_EXISTS)
-	. $(VENV_BIN)/activate && \
-		python -m build
+dist:
+	uv build
 
-.PHONY: edit
-edit:
-	$(EDITOR) $(ALL_PY_SRCS)

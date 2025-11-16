@@ -27,17 +27,17 @@ dependencies = [
   "requests-cache >= 0.9.6,< 1.3.0",
   "rich >= 12.5.1,< 14.3.0",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.urls]
 Homepage = "https://pypi.org/project/abi3audit/"
 Issues = "https://github.com/pypa/abi3audit/issues"
 Source = "https://github.com/pypa/abi3audit"
 
-[project.optional-dependencies]
+[dependency-groups]
 test = ["pytest", "pytest-cov", "pretend", "coverage[toml]"]
 lint = ["interrogate", "mypy", "ruff", "types-requests"]
-dev = ["build", "pdoc3", "abi3audit[test,lint]"]
+dev = [{ include-group = "test" }, { include-group = "lint" }]
 
 [project.scripts]
 abi3audit = "abi3audit._cli:main"
@@ -72,7 +72,30 @@ line-length = 100
 exclude = ["abi3audit/_vendor"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "W", "S", "B", "A", "C4", "EXE", "FA", "ISC", "ICN", "LOG", "PIE", "PYI", "SLOT", "FLY", "PERF", "PGH", "PL", "FURB", "UP"]
+select = [
+  "E",
+  "F",
+  "I",
+  "W",
+  "S",
+  "B",
+  "A",
+  "C4",
+  "EXE",
+  "FA",
+  "ISC",
+  "ICN",
+  "LOG",
+  "PIE",
+  "PYI",
+  "SLOT",
+  "FLY",
+  "PERF",
+  "PGH",
+  "PL",
+  "FURB",
+  "UP",
+]
 ignore = ["PLR1730", "PLR2004"]
 
 [tool.ruff.lint.flake8-bugbear]
