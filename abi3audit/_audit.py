@@ -18,13 +18,6 @@ from abi3audit._state import status
 
 logger = logging.getLogger(__name__)
 
-# A handpicked exclusion list of symbols that are not strictly in the limited API
-# or stable ABI, but in practice always appear in ABI3-compatible code.
-# Since they are not listed in CPython's `stable_abi.toml`, we maintain them here separately.
-# The list of symbols is currently empty. Any `static inline` function from Python headers
-# may produce a local symbol which does not affect ABI3 compatibility.
-_ALLOWED_SYMBOLS: set[str] = set()
-
 
 class AuditError(Exception):
     pass
@@ -132,7 +125,7 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                     continue
                 # Local symbols are fine, since they are inlined functions
                 # from the CPython limited API.
-                if sym.name not in _ALLOWED_SYMBOLS and sym.visibility != "local":
+                if sym.visibility != "local":
                     non_abi3_symbols.add(sym)
     except Exception as exc:
         raise AuditError(f"failed to collect symbols in shared object: {exc}") from exc
