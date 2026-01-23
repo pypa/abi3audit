@@ -48,7 +48,7 @@ test = [
 requires-dist = [
     { name = "abi3info", specifier = ">=2024.6.19" },
     { name = "kaitaistruct", specifier = "~=0.10" },
-    { name = "packaging", specifier = ">=21.3,<26.0" },
+    { name = "packaging", specifier = ">=21.3" },
     { name = "pefile", specifier = ">=2022.5.30" },
     { name = "pyelftools", specifier = ">=0.29" },
     { name = "requests", specifier = ">=2.28.1,<2.33.0" },
