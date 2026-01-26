@@ -6,7 +6,7 @@
 [![Packaging status](https://repology.org/badge/tiny-repos/python:abi3audit.svg)](https://repology.org/project/python:abi3audit/versions)
 <!--- @end-badges@ --->
 
-*[Read the Trail of Bits blog post about how we find bugs with `abi3audit`!](https://blog.trailofbits.com/2022/11/15/python-wheels-abi-abi3audit/)*
+*[Read the Trail of Bits blog post about finding bugs with `abi3audit`!](https://blog.trailofbits.com/2022/11/15/python-wheels-abi-abi3audit/)*
 
 `abi3audit` scans Python extensions for `abi3` violations and inconsistencies.
 
@@ -15,7 +15,8 @@ package version histories.
 
 ![An animated demonstration of abi3audit in action](https://user-images.githubusercontent.com/3059210/194171233-a61a81d2-f2ed-4078-8988-903f996ba2e3.gif)
 
-This project is maintained in part by [Trail of Bits](https://trailofbits.com).
+This project was created by [Trail of Bits](https://trailofbits.com)
+and is now maintained as part of the Python Packaging Authority (PyPA).
 This is not an official Trail of Bits product.
 
 ## Index
