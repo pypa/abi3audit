@@ -33,7 +33,7 @@ This is not an official Trail of Bits product.
 CPython (the reference implementation of Python) defines a stable API and corresponding
 ABI ("`abi3`"). In principle, any CPython extension can be built against this
 API/ABI and will remain forward compatible with future minor versions of CPython.
-In other words, if you build against the stable ABI for Python 3.5, your
+In other words: if you build against the stable ABI for Python 3.5, your
 extension should work without modification on Python 3.9.
 
 The stable ABI simplifies packaging of CPython extensions, since the packager
@@ -58,7 +58,7 @@ that controls wheel tagging and the build macros
 ([`Py_LIMITED_API`](https://docs.python.org/3/c-api/stable.html#c.Py_LIMITED_API))
 that actually lock a Python extension into a specific `abi3` version.
 
-As a result, it is very easy to compile a Python extension for the wrong `abi3`
+As a result: it is very easy to compile a Python extension for the wrong `abi3`
 version, or to tag a Python wheel as `abi3` without actually compiling it
 as `abi3`-compatible.
 
@@ -193,7 +193,7 @@ yields:
   wheels or packages instead (since they contain the sufficient metadata).
 
 * `abi3audit` considers the abi3 version when a symbol was *stabilized*,
-  not *introduced*. In other words, `abi3audit` will produce a warning
+  not *introduced*. In other words: `abi3audit` will produce a warning
   when an `abi3-cp36` extension contains a function stabilized in 3.7, even
   if that function was introduced in 3.6. This is *not* a false positive
   (it is an ABI version mismatch), but it's *generally* not a source of bugs.
@@ -201,7 +201,7 @@ yields:
 * `abi3audit` checks both the "local" and "external" symbols for each extension,
   for formats that support both. It does this to catch symbols that have been
   inlined, such as `_Py_DECREF`. However, if the extension's symbol table
-  has been stripped, these symbols may be missed.
+  has been stripped, these may be missed.
 
 ## Licensing
 
