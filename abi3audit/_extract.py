@@ -170,7 +170,7 @@ class SharedObjectExtractor:
     An extractor for shared objects.
 
     This extractor is "trivial", since it yields a shared object corresponding to
-    the spec it created with.
+    the spec it was created with.
     """
 
     def __init__(self, spec: SharedObjectSpec, parent: WheelExtractor | None = None) -> None:
@@ -224,7 +224,7 @@ class PyPIExtractor:
         )
 
     def __iter__(self) -> Iterator[_object.SharedObject]:
-        # if we get here, we already know it's a valid requirement.
+        # If we get here, we already know it's a valid requirement.
         requirement = Requirement(self.spec)
         package = requirement.name
         specifier_set = requirement.specifier
