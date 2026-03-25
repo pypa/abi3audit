@@ -10,3 +10,7 @@ authors.workspace = true
 edition.workspace = true
 
 [dependencies]
+abi3info.workspace = true
+
+thiserror.workspace = true
+goblin.workspace = true
