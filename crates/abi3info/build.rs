@@ -78,7 +78,7 @@ fn main() {
         let mut builder = phf_codegen::Map::<&str>::new();
         for (name, function) in stable_abi.functions {
             builder.entry(
-                &name,
+                name,
                 format!(
                     "FunctionInfo {{ added: Version {{ major: {}, minor: {} }} }}",
                     function.added.major, function.added.minor
@@ -93,7 +93,7 @@ fn main() {
         let mut builder = phf_codegen::Map::<&str>::new();
         for (name, data) in stable_abi.datas {
             builder.entry(
-                &name,
+                name,
                 format!(
                     "DataInfo {{ added: Version {{ major: {}, minor: {} }} }}",
                     data.added.major, data.added.minor
