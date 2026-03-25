@@ -1,105 +1,19 @@
 [build-system]
-requires = ["flit_core >=3.11,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
 
-[project]
-name = "abi3audit"
-dynamic = ["version"]
-description = "Scans Python wheels for abi3 violations and inconsistencies"
-readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE"]
-authors = [{ name = "William Woodruff", email = "william@trailofbits.com" }]
-classifiers = [
-  "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3",
-  "Development Status :: 4 - Beta",
-  "Intended Audience :: Developers",
-  "Topic :: Security",
+# # NOTE: This section is a stub; needed to prevent
+# # `uv run --only-group docs` from failing.
+# [project]
+# name = "abi3audit"
+# dynamic = ["version", "description", "readme", "urls", "authors", "license"]
+# # Arbitrarily set to the oldest non-EOL Python.
+# requires-python = ">=3.10"
+
+[tool.maturin]
+bindings = "bin"
+manifest-path = "crates/abi3audit/Cargo.toml"
+include = [
+    { path = "README.md", format = "sdist" },
+    { path = "LICENSE", format = "sdist" },
 ]
-dependencies = [
-  "abi3info >= 2024.06.19",
-  "kaitaistruct ~= 0.10",
-  "packaging >= 21.3",
-  "pefile >= 2022.5.30",
-  "pyelftools >= 0.29",
-  "requests >= 2.32.5",
-  "requests-cache >= 0.9.6",
-  "rich >= 12.5.1",
-]
-requires-python = ">=3.10"
-
-[project.urls]
-Homepage = "https://pypi.org/project/abi3audit/"
-Issues = "https://github.com/pypa/abi3audit/issues"
-Source = "https://github.com/pypa/abi3audit"
-
-[dependency-groups]
-test = ["pytest", "pytest-cov", "pretend", "coverage[toml]"]
-lint = ["interrogate", "mypy", "ruff", "types-requests"]
-dev = [{ include-group = "test" }, { include-group = "lint" }]
-
-[project.scripts]
-abi3audit = "abi3audit._cli:main"
-
-[tool.interrogate]
-exclude = ["env", "test", "codegen"]
-ignore-semiprivate = true
-fail-under = 100
-
-[tool.mypy]
-allow_redefinition = true
-check_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_untyped_defs = true
-exclude = ["_vendor/"]
-ignore_missing_imports = true
-no_implicit_optional = true
-show_error_codes = true
-strict_equality = true
-warn_no_return = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-warn_unused_ignores = true
-
-[tool.coverage.run]
-omit = ["abi3audit/_vendor/*"]
-
-[tool.ruff]
-line-length = 100
-exclude = ["abi3audit/_vendor"]
-
-[tool.ruff.lint]
-select = [
-  "E",
-  "F",
-  "I",
-  "W",
-  "S",
-  "B",
-  "A",
-  "C4",
-  "EXE",
-  "FA",
-  "ISC",
-  "ICN",
-  "LOG",
-  "PIE",
-  "PYI",
-  "SLOT",
-  "FLY",
-  "PERF",
-  "PGH",
-  "PL",
-  "FURB",
-  "UP",
-]
-ignore = ["PLR1730", "PLR2004"]
-
-[tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["abi3info.models.PyVersion"]
-
-[tool.ruff.lint.per-file-ignores]
-"test/**.py" = ["S101", "S113"]
