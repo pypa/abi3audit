@@ -1,0 +1,14 @@
+[package]
+name = "abi3audit"
+description = "Audits Python extensions for abi3 violations and inconsistencies"
+keywords = ["python", "abi3", "audit", "cpython"]
+categories = ["command-line-utilities", "security"]
+version = "0.1.0"
+
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]

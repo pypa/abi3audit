@@ -1,0 +1,19 @@
+[package]
+name = "abi3info"
+description = "Precomputed information about CPython's limited API and stable ABI"
+version = "0.1.0"
+
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+phf.workspace = true
+
+[build-dependencies]
+phf.workspace = true
+phf_codegen.workspace = true
+serde.workspace = true
+toml.workspace = true
