@@ -10,7 +10,12 @@ edition = "2024"
 license = "MIT"
 
 [workspace.dependencies]
+abi3info = { path = "crates/abi3info", version = "0.1.0" }
+abi3audit = { path = "crates/abi3audit", version = "0.1.0" }
+
+goblin = "0.10"
 phf = { version = "0.13.1", default-features = false }
 phf_codegen = "0.13.1"
 serde = { version = "1.0", features = ["derive"] }
+thiserror = "2"
 toml = { version = "1.1", features = ["serde"] }
