@@ -2,8 +2,6 @@
 
 use std::vec;
 
-use goblin::mach::symbols;
-
 use crate::object::types::{Symbol, Visibility};
 
 #[derive(thiserror::Error, Debug)]
