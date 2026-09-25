@@ -81,6 +81,15 @@ shared_objects = [
             Symbol("Py_foo_bar", None),
         ],
     ),
+    SharedObject(
+        baseline=PyVersion(3, 15),
+        computed=PyVersion(3, 15),
+        symbols=[
+            Symbol("PyUnicode_AsUTF8AndSize", "global"),
+            Symbol("PyLong_FromLong", "global"),
+            Symbol("PyModExport_spam", "global"),
+        ],
+    ),
 ]
 
 

@@ -8,7 +8,8 @@
 
 *[Read the Trail of Bits blog post about finding bugs with `abi3audit`!](https://blog.trailofbits.com/2022/11/15/python-wheels-abi-abi3audit/)*
 
-`abi3audit` scans Python extensions for `abi3` violations and inconsistencies.
+`abi3audit` scans Python extensions for `abi3` and `abi3t` violations and
+inconsistencies.
 
 It can scan individual (unpackaged) shared objects, packaged wheels, or entire
 package version histories.
@@ -96,6 +97,10 @@ abi3audit procmaps.abi3.so
 # audit a local copy of an abi3 wheel
 abi3audit procmaps-0.5.0-cp36-abi3-manylinux2010_x86_64.whl
 
+# audit an abi3t extension (Python 3.15+) or a wheel supporting both ABIs
+abi3audit example.abi3t.so
+abi3audit example-1.0-cp315-abi3.abi3t-linux_x86_64.whl
+
 # audit every abi3 wheel for the package 'procmaps' on PyPI
 abi3audit procmaps
 ```
@@ -174,6 +179,14 @@ yields:
 `abi3audit` is a *best-effort* tool, with some of the same limitations as
 [`auditwheel`](https://github.com/pypa/auditwheel). In particular:
 
+* `abi3t` support checks symbols against the same Stable ABI database as `abi3`,
+  and recognizes Python 3.15's `PyModExport_*` export hooks.
+  Passing an audit does **not** establish full `abi3t` conformance: `abi3audit`
+  cannot verify that an extension avoids direct access to opaque structures,
+  declares the correct `PyABIInfo` flags, or is thread-safe. It does not load
+  extensions or call their export hooks. The JSON report retains the existing
+  `abi3` field names for both ABIs.
+
 * `abi3audit` cannot check for *dynamic* abi3 violations, such as an extension
   that calls [`dlsym(3)`](https://man7.org/linux/man-pages/man3/dlsym.3.html)
   to invoke a non-abi3 function at runtime.
@@ -191,6 +204,9 @@ yields:
   version mismatches (e.g., a symbol that was only stabilized in 3.6).
   This can result in false positives, so users are encouraged to audit entire
   wheels or packages instead (since they contain the sufficient metadata).
+  Bare `abi3t` objects (e.g. `foo.abi3t.so`) instead default to Python 3.15,
+  the first version supporting `abi3t`. Use `--assume-minimum-abi3` to specify
+  a newer baseline when necessary.
 
 * `abi3audit` considers the abi3 version when a symbol was *stabilized*,
   not *introduced*. In other words: `abi3audit` will produce a warning

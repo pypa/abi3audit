@@ -15,10 +15,11 @@ from abi3audit._extract import (
 def test_make_spec():
     assert make_specs("foo.whl") == [WheelSpec("foo.whl")]
     assert make_specs("foo.abi3.so") == [SharedObjectSpec("foo.abi3.so")]
+    assert make_specs("foo.abi3t.so") == [SharedObjectSpec("foo.abi3t.so")]
     assert make_specs("foo") == [PyPISpec("foo")]
 
-    # Shared objects need to be tagged with `.abi3` or --assume-minimum-abi3
-    # must be used.
+    # Shared objects need to be tagged with `.abi3` or `.abi3t`, or
+    # --assume-minimum-abi3 must be used.
     with pytest.raises(InvalidSpec, match="--assume-minimum-abi3"):
         make_specs("foo.so")
 
