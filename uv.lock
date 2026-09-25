@@ -42,7 +42,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "abi3info", specifier = ">=2024.6.19" },
+    { name = "abi3info", specifier = ">=2026.9.25" },
     { name = "kaitaistruct", specifier = "~=0.10" },
     { name = "packaging", specifier = ">=21.3" },
     { name = "pefile", specifier = ">=2022.5.30" },
@@ -78,11 +78,11 @@ test = [
 
 [[package]]
 name = "abi3info"
-version = "2025.11.29"
+version = "2026.9.25"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4e/62/62ba2670d5edf6d658b22ff1dc788bf146c22a73f12627d485f6c290cd6c/abi3info-2025.11.29.tar.gz", hash = "sha256:dd96754872211f96ed6955d47e725bdc579e581dd1705d581923270f825d1318", size = 20437, upload-time = "2025-11-29T19:02:48.656Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/79/69/e297e349b9ce7190f24acb38d8417ef90cb202899faf7fe66d21b257b750/abi3info-2026.9.25.tar.gz", hash = "sha256:bfca7d2845517c15cee1ae5c4be0d4803070ac6837e9b0c4da1317b72b64dbc9", size = 21102, upload-time = "2026-09-25T22:50:38.088Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8b/a4/b0c4c553b2ca389e0f135878e70fe9de05d86f4ec978d48c6580aead844a/abi3info-2025.11.29-py3-none-any.whl", hash = "sha256:75343a1d3eb662db4e20fe057fcd7bfc5b66e25aa6abf9cf5e90f70014151ebe", size = 19822, upload-time = "2025-11-29T19:02:46.722Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/43/982c1a3084bc6237a49c806931e461e9e9518e2515332b6d05e9b65ca317/abi3info-2026.9.25-py3-none-any.whl", hash = "sha256:d5cbf46f358a4e0cafa171572adb67e5dce14a1b316e3c9f577234dbafcd5214", size = 20603, upload-time = "2026-09-25T22:50:36.717Z" },
 ]
 
 [[package]]

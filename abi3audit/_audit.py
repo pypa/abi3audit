@@ -85,7 +85,7 @@ class AuditResult:
             yield f"[green]:thumbs_up: {self.so}"
 
 
-def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) -> AuditResult:
+def audit(so: SharedObject, assume_minimum_abi3: PyVersion | None = PyVersion(3, 2)) -> AuditResult:
     # We might fail to retrieve a minimum abi3 baseline if our context
     # (the shared object or its containing wheel) isn't actually tagged
     # as abi3 compatible.
@@ -117,11 +117,11 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                 if maybe_abi3.added > baseline:
                     future_abi3_objects.add(maybe_abi3)
             elif sym.name.startswith(("Py", "_Py")):
-                # Exclude module initialization symbols. Technically
-                # this should always be `PyInit_{filename}` but there can
+                # Exclude module initialization and export hooks. The suffix
+                # normally matches the filename, but there can
                 # be multiple if a shared object contains multiple extensions;
                 # see https://github.com/pypa/abi3audit/issues/111.
-                if sym.name.startswith("PyInit_"):
+                if sym.name.startswith(("PyInit_", "PyModExport_")):
                     continue
                 # Local symbols are fine, since they are inlined functions
                 # from the CPython limited API.
