@@ -103,17 +103,31 @@ class SpecResults:
 
     def summarize_extraction(self, extractor: Extractor, summary: bool) -> str | None:
         spec_results = self._results[extractor]
+        spec_counts = len(spec_results)
 
         if not spec_results:
             return _yellow(f":person_shrugging: nothing auditable found in {extractor.spec}")
 
         abi3_version_counts = sum(self._bad_abi3_version_counts[res.so] for res in spec_results)
         abi3_violations = sum(self._abi3_violation_counts[res.so] for res in spec_results)
+
+        _singular2plural = {
+            "extension": "extensions",
+            "mismatch": "mismatches",
+            "violation": "violations",
+        }
+        def maybe_plural(noun: str, count: int) -> str:
+            if count == 1:
+                return noun
+            else:
+                return _singular2plural[noun]
+
         if summary or abi3_violations > 0 or abi3_version_counts > 0:
             return (
-                f":information_desk_person: {extractor}: {len(spec_results)} extensions scanned; "
-                f"{_colornum(abi3_version_counts)} ABI version mismatches and "
-                f"{_colornum(abi3_violations)} ABI violations found"
+                f":information_desk_person: {extractor}: "
+                f"{spec_counts} {maybe_plural('extension', spec_counts)} scanned; "
+                f"{_colornum(abi3_version_counts)} ABI version {maybe_plural('mismatch', abi3_version_counts)} "
+                f"and {_colornum(abi3_violations)} ABI {maybe_plural('violation', abi3_violations)} found"
             )
         else:
             return None
