@@ -26,6 +26,7 @@ This is not an official Trail of Bits product.
 * [Installation](#installation)
 * [Usage](#usage)
   * [Examples](#examples)
+  * [abi3t support](#abi3t-support)
 * [Limitations](#limitations)
 * [Licensing](#licensing)
 
@@ -174,18 +175,21 @@ yields:
 }
 ```
 
+### abi3t support
+
+`abi3audit` checks `abi3t` extensions against the same Stable ABI database used
+for `abi3` and recognizes Python 3.15's `PyModExport_*` export hooks. JSON
+reports retain the existing `abi3` field names for both ABIs.
+
 ## Limitations
 
 `abi3audit` is a *best-effort* tool, with some of the same limitations as
 [`auditwheel`](https://github.com/pypa/auditwheel). In particular:
 
-* `abi3t` support checks symbols against the same Stable ABI database as `abi3`,
-  and recognizes Python 3.15's `PyModExport_*` export hooks.
-  Passing an audit does **not** establish full `abi3t` conformance: `abi3audit`
-  cannot verify that an extension avoids direct access to opaque structures,
-  declares the correct `PyABIInfo` flags, or is thread-safe. It does not load
-  extensions or call their export hooks. The JSON report retains the existing
-  `abi3` field names for both ABIs.
+* `abi3audit` cannot verify that an `abi3t` extension avoids direct access to
+  opaque structures, declares the correct `PyABIInfo` flags, or is thread-safe.
+  It does not load extensions or invoke their export hooks. Passing an audit
+  therefore does **not** establish full `abi3t` conformance.
 
 * `abi3audit` cannot check for *dynamic* abi3 violations, such as an extension
   that calls [`dlsym(3)`](https://man7.org/linux/man-pages/man3/dlsym.3.html)
