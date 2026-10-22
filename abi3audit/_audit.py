@@ -117,11 +117,12 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion = PyVersion(3, 2)) ->
                 if maybe_abi3.added > baseline:
                     future_abi3_objects.add(maybe_abi3)
             elif sym.name.startswith(("Py", "_Py")):
-                # Exclude module initialization symbols. Technically
+                # Exclude module initialization symbols (including `PyInitU_`, used
+                # for non-ASCII module names per PEP 489). Technically
                 # this should always be `PyInit_{filename}` but there can
                 # be multiple if a shared object contains multiple extensions;
                 # see https://github.com/pypa/abi3audit/issues/111.
-                if sym.name.startswith("PyInit_"):
+                if sym.name.startswith(("PyInit_", "PyInitU_")):
                     continue
                 # Local symbols are fine, since they are inlined functions
                 # from the CPython limited API.

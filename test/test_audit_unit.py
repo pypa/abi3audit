@@ -81,6 +81,16 @@ shared_objects = [
             Symbol("Py_foo_bar", None),
         ],
     ),
+    # Module init functions are not ABI violations, including the
+    #  form used for non-ASCII module names (PEP 489).
+    SharedObject(
+        baseline=PyVersion(3, 10),
+        computed=PyVersion(3, 10),
+        symbols=[
+            Symbol("PyInit_foo", "global"),
+            Symbol("PyInitU_md_bja", "global"),
+        ],
+    ),
 ]
 
 
