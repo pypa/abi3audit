@@ -87,7 +87,9 @@ shared_objects = [
         symbols=[
             Symbol("PyUnicode_AsUTF8AndSize", "global"),
             Symbol("PyLong_FromLong", "global"),
+            Symbol("PyInit_spam", "global"),
             Symbol("PyModExport_spam", "global"),
+            Symbol("PyModExportU_md_bja", "global"),
         ],
     ),
 ]

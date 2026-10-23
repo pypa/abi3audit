@@ -178,8 +178,8 @@ yields:
 ### abi3t support
 
 `abi3audit` checks `abi3t` extensions against the same Stable ABI database used
-for `abi3` and recognizes Python 3.15's `PyModExport_*` export hooks. JSON
-reports retain the existing `abi3` field names for both ABIs.
+for `abi3` and recognizes Python 3.15's `PyModExport_*` and `PyModExportU_*`
+export hooks.
 
 ## Limitations
 

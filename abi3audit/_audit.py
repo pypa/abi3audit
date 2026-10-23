@@ -121,7 +121,7 @@ def audit(so: SharedObject, assume_minimum_abi3: PyVersion | None = PyVersion(3,
                 # normally matches the filename, but there can
                 # be multiple if a shared object contains multiple extensions;
                 # see https://github.com/pypa/abi3audit/issues/111.
-                if sym.name.startswith(("PyInit_", "PyModExport_")):
+                if sym.name.startswith(("PyInit_", "PyModExport_", "PyModExportU_")):
                     continue
                 # Local symbols are fine, since they are inlined functions
                 # from the CPython limited API.
