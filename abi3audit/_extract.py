@@ -107,9 +107,12 @@ def make_specs(val: str, assume_minimum_abi3: PyVersion | None = None) -> list[S
         # NOTE: We allow untagged shared objects when they're indirectly
         # audited (e.g. via an abi3 wheel), but when auditing them directly we
         # only allow them if we have a minimum abi3 version to check against.
-        if assume_minimum_abi3 is None and ".abi3." not in val:
+        if assume_minimum_abi3 is None and not any(
+            tag in Path(val).suffixes for tag in (".abi3", ".abi3t")
+        ):
             raise InvalidSpec(
-                "--assume-minimum-abi3 must be used when extension does not contain '.abi3.' infix"
+                "--assume-minimum-abi3 must be used when extension does not contain "
+                "'.abi3.' or '.abi3t.' infix"
             )
         return [SharedObjectSpec(val)]
     else:
@@ -277,7 +280,7 @@ class PyPIExtractor:
                     console.log(f"[red]:skull: {self}: {exc}")
                     continue
 
-                if not any(t.abi == "abi3" for t in tagset):
+                if not any(t.abi in {"abi3", "abi3t"} for t in tagset):
                     logger.debug(f"skipping non-abi3 wheel: {dist['filename']}")
                     continue
 

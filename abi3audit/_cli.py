@@ -172,7 +172,7 @@ class SpecResults:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="abi3audit",
-        description="Scans Python extensions for abi3 violations and inconsistencies",
+        description="Scans Python extensions for abi3 and abi3t violations and inconsistencies",
     )
     parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument(

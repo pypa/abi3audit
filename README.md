@@ -8,7 +8,8 @@
 
 *[Read the Trail of Bits blog post about finding bugs with `abi3audit`!](https://blog.trailofbits.com/2022/11/15/python-wheels-abi-abi3audit/)*
 
-`abi3audit` scans Python extensions for `abi3` violations and inconsistencies.
+`abi3audit` scans Python extensions for `abi3` and `abi3t` violations and
+inconsistencies.
 
 It can scan individual (unpackaged) shared objects, packaged wheels, or entire
 package version histories.
@@ -25,6 +26,7 @@ This is not an official Trail of Bits product.
 * [Installation](#installation)
 * [Usage](#usage)
   * [Examples](#examples)
+  * [abi3t support](#abi3t-support)
 * [Limitations](#limitations)
 * [Licensing](#licensing)
 
@@ -95,6 +97,10 @@ abi3audit procmaps.abi3.so
 
 # audit a local copy of an abi3 wheel
 abi3audit procmaps-0.5.0-cp36-abi3-manylinux2010_x86_64.whl
+
+# audit an abi3t extension (Python 3.15+) or a wheel supporting both ABIs
+abi3audit example.abi3t.so
+abi3audit example-1.0-cp315-abi3.abi3t-linux_x86_64.whl
 
 # audit every abi3 wheel for the package 'procmaps' on PyPI
 abi3audit procmaps
@@ -169,10 +175,21 @@ yields:
 }
 ```
 
+### abi3t support
+
+`abi3audit` checks `abi3t` extensions against the same Stable ABI database used
+for `abi3` and recognizes Python 3.15's `PyModExport_*` and `PyModExportU_*`
+export hooks.
+
 ## Limitations
 
 `abi3audit` is a *best-effort* tool, with some of the same limitations as
 [`auditwheel`](https://github.com/pypa/auditwheel). In particular:
+
+* `abi3audit` cannot verify that an `abi3t` extension avoids direct access to
+  opaque structures, declares the correct `PyABIInfo` flags, or is thread-safe.
+  It does not load extensions or invoke their export hooks. Passing an audit
+  therefore does **not** establish full `abi3t` conformance.
 
 * `abi3audit` cannot check for *dynamic* abi3 violations, such as an extension
   that calls [`dlsym(3)`](https://man7.org/linux/man-pages/man3/dlsym.3.html)
@@ -191,6 +208,9 @@ yields:
   version mismatches (e.g., a symbol that was only stabilized in 3.6).
   This can result in false positives, so users are encouraged to audit entire
   wheels or packages instead (since they contain the sufficient metadata).
+  Bare `abi3t` objects (e.g. `foo.abi3t.so`) instead default to Python 3.15,
+  the first version supporting `abi3t`. Use `--assume-minimum-abi3` to specify
+  a newer baseline when necessary.
 
 * `abi3audit` considers the abi3 version when a symbol was *stabilized*,
   not *introduced*. In other words: `abi3audit` will produce a warning
