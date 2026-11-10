@@ -33,3 +33,9 @@ class TestWheelExtractor:
     def test_init(self):
         with pytest.raises(ExtractorError):
             WheelExtractor(WheelSpec("not-a-real-file"))
+
+    def test_init_rejects_non_zip(self, tmp_path):
+        bad_wheel = tmp_path / "fake-1.0-py3-none-any.whl"
+        bad_wheel.write_bytes(b"this is not a zip file")
+        with pytest.raises(ExtractorError, match="not a valid wheel"):
+            WheelExtractor(WheelSpec(str(bad_wheel)))

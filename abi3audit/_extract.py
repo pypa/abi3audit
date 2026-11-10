@@ -10,7 +10,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 
 from abi3info.models import PyVersion
 from packaging import utils
@@ -144,6 +144,14 @@ class WheelExtractor:
 
         if not self.path.is_file():
             raise ExtractorError(f"not a file: {self.path}")
+
+        try:
+            with ZipFile(self.path, "r"):
+                pass
+        except BadZipFile as e:
+            # A non-zip file with a .whl name would otherwise explode
+            # with a traceback later, when iteration opens the archive.
+            raise ExtractorError(f"not a valid wheel: {self.path}: {e}") from e
 
     # TODO: Do this during initialization instead, so that we can turn
     # more things into early errors (like the wheel not being abi3-tagged).
