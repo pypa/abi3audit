@@ -32,7 +32,7 @@ class _SharedObjectBase:
         self._extractor = extractor
         self.path = self._extractor.path
 
-    def abi3_version(self, assume_lowest: PyVersion) -> PyVersion | None:
+    def abi3_version(self, assume_lowest: PyVersion | None) -> PyVersion | None:
         # If we're dealing with a shared object that was extracted from a wheel,
         # we try and suss out the abi3 version from the wheel's own tags.
         if self._extractor.parent is not None:
@@ -40,10 +40,17 @@ class _SharedObjectBase:
             # we select the highest interpreter version.
             tagset = self._extractor.parent.tagset
             pyversions = [
-                PyVersion.parse_python_tag(t.interpreter) for t in tagset if t.abi == "abi3"
+                PyVersion.parse_python_tag(t.interpreter)
+                for t in tagset
+                if t.abi in {"abi3", "abi3t"}
             ]
             if len(pyversions) > 0:
                 return max(pyversions)
+
+        # abi3t was introduced in Python 3.15, so a bare abi3t extension cannot
+        # target an earlier version. An explicitly assumed version may be newer.
+        if ".abi3t" in self._extractor.path.suffixes:
+            return max(assume_lowest or PyVersion(3, 15), PyVersion(3, 15))
 
         # If we're dealing with a standalone shared object (or the above fell through),
         # we fall back on checking for the ".abi3" marker in the shared object's own
